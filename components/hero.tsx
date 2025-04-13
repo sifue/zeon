@@ -15,7 +15,9 @@ export default function Header() {
       <p className="text-xl max-w-xl text-center">
         ZEN大学の授業を評価・レビューできるプラットフォーム。
         <br />
-        ZEN大学のGoogleアカウントでログインして、授業評価を共有しましょう。
+        ZEN大学のGoogleアカウントでログインして、半匿名で授業評価を共有しましょう。
+        <br />
+        <span className="text-sm text-gray-500">※ユーザーIDから生成された固有の名前で表示されます</span>
       </p>
       <div className="w-full p-[1px] bg-gradient-to-r from-transparent via-foreground/10 to-transparent my-8" />
     </div>

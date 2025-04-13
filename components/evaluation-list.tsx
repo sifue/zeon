@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import { StarRating } from '@/components/star-rating';
 import { formatDistanceToNow } from 'date-fns';
@@ -16,6 +18,9 @@ type Evaluation = {
   updated_at: string;
   users?: {
     email: string;
+    raw_user_meta_data?: {
+      name?: string;
+    };
   };
   useful_count: number;
 };
@@ -27,13 +32,19 @@ interface EvaluationListProps {
 
 // 評価者名を表示するヘルパー関数
 const formatEvaluatorName = (evaluation: Evaluation) => {
+  // Display Nameがある場合はそれを使用
+  if (evaluation.users?.raw_user_meta_data?.name) {
+    return evaluation.users.raw_user_meta_data.name;
+  }
+  
+  // Display Nameがない場合はメールアドレスからユーザー名部分を抽出
   if (evaluation.users?.email) {
-    // メールアドレスからユーザー名部分を抽出
     const emailParts = evaluation.users.email.split('@');
     if (emailParts.length > 0) {
       return emailParts[0];
     }
   }
+  
   return '匿名';
 };
 

@@ -1,6 +1,17 @@
-import { getSubjectByCode, getEvaluationsBySubjectCode, getEvaluationStatsByCode, checkIsAdmin } from '@/app/actions';
+import { 
+  getSubjectByCode, 
+  getEvaluationsBySubjectCode, 
+  getEvaluationStatsByCode, 
+  checkIsAdmin,
+  getUserEvaluation,
+  submitEvaluation,
+  deleteEvaluation,
+  submitEvaluationAction,
+  deleteEvaluationAction
+} from '@/app/actions';
 import { SubjectDetail } from '@/components/subject-detail';
 import { EvaluationList } from '@/components/evaluation-list';
+import { EvaluationForm } from '@/components/evaluation-form';
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import { checkBannedUser } from '@/app/check-banned';
@@ -51,6 +62,9 @@ export default async function SubjectPage({ params }: SubjectPageParams) {
   // 評価一覧を取得
   const evaluations = await getEvaluationsBySubjectCode(code);
   
+  // ユーザーの評価を取得
+  const userEvaluation = await getUserEvaluation(code);
+  
   // 管理者かどうかをチェック
   const isAdmin = await checkIsAdmin();
 
@@ -69,12 +83,24 @@ export default async function SubjectPage({ params }: SubjectPageParams) {
         <h1 className="text-3xl font-bold">科目詳細</h1>
         
         {/* 科目詳細表示コンポーネント */}
-        <SubjectDetail subject={subject} stats={stats} />
+        <SubjectDetail subject={JSON.parse(JSON.stringify(subject))} stats={JSON.parse(JSON.stringify(stats))} />
+        
+        {/* 評価投稿フォーム */}
+        <div className="mt-6">
+          <h2 className="text-2xl font-semibold mb-4">評価を投稿</h2>
+          <EvaluationForm 
+            subjectCode={code}
+            subject={JSON.parse(JSON.stringify(subject))}
+            existingEvaluation={userEvaluation ? JSON.parse(JSON.stringify(userEvaluation)) : undefined}
+            submitAction={submitEvaluationAction}
+            deleteAction={userEvaluation ? deleteEvaluationAction : undefined}
+          />
+        </div>
         
         {/* レビュー一覧セクション */}
         <div className="mt-6">
           <h2 className="text-2xl font-semibold mb-4">レビュー一覧</h2>
-          <EvaluationList evaluations={evaluations} />
+          <EvaluationList evaluations={JSON.parse(JSON.stringify(evaluations))} />
         </div>
       </div>
     </div>
