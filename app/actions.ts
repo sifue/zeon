@@ -382,3 +382,73 @@ export async function deleteEvaluationAction(formData: FormData) {
     return { success: false, code: formData.get('code') as string };
   }
 }
+
+// 役に立ったボタンを押す/取り消す
+export const toggleUseful = async (evaluationId: number) => {
+  const supabase = await createClient();
+  
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error('認証されていません');
+  }
+  
+  // 既存の「役に立った」を確認
+  const { data: existingUseful } = await supabase
+    .from('usefuls')
+    .select('id')
+    .eq('evaluation_id', evaluationId)
+    .eq('uid', user.id)
+    .maybeSingle();
+  
+  if (existingUseful) {
+    // 既に「役に立った」を押している場合は削除
+    const { error } = await supabase
+      .from('usefuls')
+      .delete()
+      .eq('id', existingUseful.id);
+    
+    if (error) {
+      throw new Error(error.message);
+    }
+    
+    return { added: false, evaluationId };
+  } else {
+    // 「役に立った」を追加
+    const { error } = await supabase
+      .from('usefuls')
+      .insert({
+        evaluation_id: evaluationId,
+        uid: user.id,
+        created_at: new Date().toISOString(),
+      });
+    
+    if (error) {
+      throw new Error(error.message);
+    }
+    
+    return { added: true, evaluationId };
+  }
+};
+
+// 役に立ったボタンを押す/取り消すアクション
+export async function toggleUsefulAction(formData: FormData) {
+  'use server';
+  
+  try {
+    const evaluationId = parseInt(formData.get('evaluation_id') as string);
+    
+    if (isNaN(evaluationId)) {
+      throw new Error('評価IDが不正です');
+    }
+    
+    const result = await toggleUseful(evaluationId);
+    
+    return { success: true, ...result };
+  } catch (error) {
+    console.error('役に立ったの操作中にエラーが発生しました', error);
+    return { success: false };
+  }
+}
