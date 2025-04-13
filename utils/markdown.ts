@@ -1,48 +1,70 @@
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
+import remarkGfm from 'remark-gfm';
+import remarkRehype from 'remark-rehype';
+import rehypeRaw from 'rehype-raw';
+import rehypeStringify from 'rehype-stringify';
+
 /**
- * Markdownテキストを簡易的にHTMLに変換する関数
- * 注: 完全なMarkdownパーサーではなく、基本的な変換のみを行います
+ * Markdownテキストを完全なHTMLに変換する関数
+ * GitHubフレーバーのマークダウンに対応しています
  */
 export function markdownToHtml(markdown: string): string {
   if (!markdown) return '';
 
-  // 改行を処理
-  let html = markdown.replace(/\n\n/g, '</p><p>');
+  // 数字付きリストとインデントされたリストの特殊なパターンを前処理
+  let processedMarkdown = markdown;
   
-  // 見出し (## 見出し -> <h2>見出し</h2>)
-  html = html.replace(/^## (.+)$/gm, '<h2 class="text-xl font-semibold mt-6 mb-3">$1</h2>');
-  html = html.replace(/^### (.+)$/gm, '<h3 class="text-lg font-semibold mt-5 mb-2">$1</h3>');
-  
-  // 水平線
-  html = html.replace(/^---$/gm, '<hr class="my-4 border-t border-gray-300" />');
-  
-  // リスト項目 (- アイテム -> <li>アイテム</li>)
-  html = html.replace(/^\s*- (.+)$/gm, '<li class="ml-5 list-disc">$1</li>');
-  
-  // 強調 (**テキスト** -> <strong>テキスト</strong>)
-  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  
-  // 段落で囲む
-  html = '<p>' + html + '</p>';
-  
-  // 連続したリスト項目をulで囲む
-  html = html.replace(/(<li[^>]*>.*?<\/li>)(?:\s*)(<li[^>]*>)/g, '$1<li-separator>$2');
-  const parts = html.split('<li-separator>');
-  html = parts[0];
-  for (let i = 1; i < parts.length; i++) {
-    if (parts[i-1].includes('<li') && parts[i].includes('<li')) {
-      html += '</ul><ul class="my-2">' + parts[i];
-    } else if (!parts[i-1].includes('<li') && parts[i].includes('<li')) {
-      html += '</p><ul class="my-2">' + parts[i];
-    } else if (parts[i-1].includes('<li') && !parts[i].includes('<li')) {
-      html += '</ul><p>' + parts[i];
-    } else {
-      html += parts[i];
+  // 数字付きリストの後にインデントされたリストがある場合の処理
+  // 例: 1. **タイトル**
+  //     - アイテム1
+  //     - アイテム2
+  const numberListPattern = /^(\d+)\.\s+(.+?)$([\s\S]*?)(?=^(?:\d+\.|[^\s-])|$)/gm;
+  processedMarkdown = processedMarkdown.replace(numberListPattern, (match, number, title, content) => {
+    // インデントされたリスト項目を検出
+    const indentedItems = content.match(/^\s*-\s+(.+?)$/gm);
+    
+    if (indentedItems) {
+      // インデントされたリスト項目をHTMLに変換
+      const itemsHtml = indentedItems
+        .map((item: string) => {
+          const itemContent = item.replace(/^\s*-\s+/, '');
+          return `<li>${itemContent}</li>`;
+        })
+        .join('\n');
+      
+      // 数字付きリスト項目とインデントされたリスト項目を組み合わせる
+      return `${number}. ${title}\n<ul>\n${itemsHtml}\n</ul>\n\n`;
     }
-  }
-  
-  // 重複した閉じタグを修正
-  html = html.replace(/<\/p><p><\/ul>/g, '</ul>');
-  html = html.replace(/<\/ul><p><\/p>/g, '</ul>');
-  
-  return html;
+    
+    return match;
+  });
+
+  // remarkとrehypeを使用してマークダウンをHTMLに変換
+  const result = unified()
+    .use(remarkParse) // マークダウンをパース
+    .use(remarkGfm) // GitHubフレーバーのマークダウンに対応
+    .use(remarkRehype, { allowDangerousHtml: true }) // remarkからrehypeへの変換
+    .use(rehypeRaw) // HTMLをそのまま出力
+    .use(rehypeStringify, { allowDangerousHtml: true }) // rehypeからHTMLへの変換
+    .processSync(processedMarkdown);
+
+  // 変換結果を文字列として返す
+  const html = String(result);
+
+  // TailwindCSSのクラスを適用
+  let styledHtml = html
+    // 見出し
+    .replace(/<h2>/g, '<h2 class="text-xl font-semibold mt-6 mb-3">')
+    .replace(/<h3>/g, '<h3 class="text-lg font-semibold mt-5 mb-2">')
+    // 水平線
+    .replace(/<hr>/g, '<hr class="my-4 border-t border-gray-300" />')
+    // リスト
+    .replace(/<ul>/g, '<ul class="my-2 list-disc pl-8">')
+    .replace(/<ol>/g, '<ol class="my-2 pl-8" style="list-style-type: decimal; padding-left: 2rem;">')
+    .replace(/<li>/g, '<li class="mb-1">')
+    // 段落
+    .replace(/<p>/g, '<p class="my-2">');
+
+  return styledHtml;
 }

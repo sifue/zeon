@@ -38,8 +38,10 @@ Googleアカウント認証を用いて、ZEN大学のドメインのGoogleア�
 
 ### ライブラリ
 - Next.js
-- TailwindCSS
-- Prettier
+- TailwindCSS (スタイリング)
+- Prettier (コードフォーマッター)
+- date-fns (日付のフォーマッター)
+- remark (Markdownのパーサー)
 
 ## アクターの定義
 
