@@ -12,7 +12,7 @@ BEGIN
   -- ユーザーのメールアドレスがzen.ac.jpドメインでない場合
   IF NEW.email IS NOT NULL AND NEW.email NOT LIKE '%@zen.ac.jp' THEN
     -- BANリストに追加
-    INSERT INTO public.ban_users (uid)
+    INSERT INTO public.banned_users (uid)
     VALUES (NEW.id)
     ON CONFLICT (uid) DO NOTHING;
     
@@ -39,15 +39,15 @@ DO $$
 DECLARE
   user_record RECORD;
 BEGIN
-  -- ban_usersテーブルに登録されていないzen.ac.jp以外のドメインのユーザーを検索
+  -- banned_usersテーブルに登録されていないzen.ac.jp以外のドメインのユーザーを検索
   FOR user_record IN 
     SELECT u.id, u.email 
     FROM auth.users u
-    LEFT JOIN public.ban_users b ON u.id = b.uid
+    LEFT JOIN public.banned_users b ON u.id = b.uid
     WHERE u.email NOT LIKE '%@zen.ac.jp' AND b.uid IS NULL
   LOOP
     -- BANリストに追加
-    INSERT INTO public.ban_users (uid)
+    INSERT INTO public.banned_users (uid)
     VALUES (user_record.id)
     ON CONFLICT (uid) DO NOTHING;
     

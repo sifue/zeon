@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS public.admins (
 );
 
 -- BANされたユーザーテーブル
-CREATE TABLE IF NOT EXISTS public.ban_users (
+CREATE TABLE IF NOT EXISTS public.banned_users (
   uid UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE
 );
 

@@ -18,7 +18,7 @@ CREATE OR REPLACE FUNCTION public.is_banned()
 RETURNS BOOLEAN AS $$
 BEGIN
   RETURN EXISTS (
-    SELECT 1 FROM public.ban_users
+    SELECT 1 FROM public.banned_users
     WHERE uid = auth.uid()
   );
 END;
@@ -30,7 +30,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 ALTER TABLE public.admins ENABLE ROW LEVEL SECURITY;
 
 -- BANされたユーザーテーブル
-ALTER TABLE public.ban_users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.banned_users ENABLE ROW LEVEL SECURITY;
 
 -- 科目テーブル
 ALTER TABLE public.subjects ENABLE ROW LEVEL SECURITY;
@@ -65,16 +65,16 @@ CREATE POLICY admin_delete ON public.admins
 
 -- BANされたユーザーテーブル
 -- 管理者のみが閲覧・編集可能
-CREATE POLICY ban_user_select ON public.ban_users
+CREATE POLICY banned_user_select ON public.banned_users
   FOR SELECT USING (public.is_admin());
 
-CREATE POLICY ban_user_insert ON public.ban_users
+CREATE POLICY banned_user_insert ON public.banned_users
   FOR INSERT WITH CHECK (public.is_admin());
 
-CREATE POLICY ban_user_update ON public.ban_users
+CREATE POLICY banned_user_update ON public.banned_users
   FOR UPDATE USING (public.is_admin()) WITH CHECK (public.is_admin());
 
-CREATE POLICY ban_user_delete ON public.ban_users
+CREATE POLICY banned_user_delete ON public.banned_users
   FOR DELETE USING (public.is_admin());
 
 -- 科目テーブル
