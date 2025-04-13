@@ -204,11 +204,6 @@ RLS上では、BANされていない全てのユーザーは閲覧できる。�
 /dashboard app\(dashboard-pages)\dashboard\page.tsx
 
 - ダッシュボードは、BANされていない全ての認証ユーザーが表示できる。
-
-### ダッシュボード /dashboard
-/dashboard app\(dashboard-pages)\dashboard\page.tsx
-
-- ダッシュボードは、BANされていない全ての認証ユーザーが表示できる。
 - 最近のレビュー一覧と科目一覧が表示される。
 - 科目は、想定年次順 > 科目コード順に並び替えられる。
 - 科目一覧は、科目名、教員、全ての科目の評価の数と評価の平均をみることができる。

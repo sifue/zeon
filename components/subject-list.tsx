@@ -1,5 +1,7 @@
 import React from 'react';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import Link from 'next/link';
+import { StarRating } from '@/components/star-rating';
 
 // 科目の型定義
 type Subject = {
@@ -23,16 +25,6 @@ interface SubjectListProps {
   subjects: Subject[];
   evaluationStats: EvaluationStats;
 }
-
-// 星評価を表示するコンポーネント
-const StarRating = ({ rating }: { rating: number }) => {
-  return (
-    <div className="flex items-center whitespace-nowrap">
-      <span className="text-yellow-500 font-bold">{rating.toFixed(1)}</span>
-      <span className="ml-1 text-yellow-500">★</span>
-    </div>
-  );
-};
 
 // 教員情報を表示するヘルパー関数
 const formatFaculties = (faculties: any) => {
@@ -69,7 +61,14 @@ export function SubjectList({ subjects, evaluationStats }: SubjectListProps) {
           
           return (
             <TableRow key={subject.code}>
-              <TableCell className="font-medium whitespace-normal">{subject.name}</TableCell>
+              <TableCell className="font-medium whitespace-normal">
+                <Link 
+                  href={`/subject/${subject.code}`}
+                  className="text-blue-600 hover:text-blue-800 hover:underline"
+                >
+                  {subject.name}
+                </Link>
+              </TableCell>
               <TableCell className="whitespace-normal">{formatFaculties(subject.faculties)}</TableCell>
               <TableCell className="text-center">{subject.enrollment_grade}</TableCell>
               <TableCell className="text-center">
