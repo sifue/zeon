@@ -1,5 +1,4 @@
 {
-  "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -36,5 +35,9 @@
     "tailwindcss": "3.4.17",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "5.7.2"
-  }
+  },
+  "engines": {
+    "node": ">22.0.0"
+  },
+  "license": "MIT"
 }

@@ -53,6 +53,10 @@ ZEON（ジオン）は、ZEN university's classes Evaluation Online Network（Un
 - [セットアップガイド](docs/SETUP.md) - 開発環境のセットアップ方法
 - [データベース構築](sql/README.md) - データベーススキーマとSQLスクリプトについて
 
+## ライセンス
+MITライセンスのもとで公開されています。  
+著作権は、Soichiro Yoshimura (@sifue) に帰属します。  
+
 ---
 
 # 以下はテンプレートの情報です
