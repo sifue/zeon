@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { StarRating } from '@/components/star-rating';
 import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import { toggleUsefulAction } from '@/app/actions';
-import { ThumbsUp, Flag } from 'lucide-react';
+import { toggleUsefulAction, toggleEvaluationVisibilityAction, checkEvaluationInvisible } from '@/app/actions';
+import { ThumbsUp, Flag, EyeOff, Eye } from 'lucide-react';
 import { ReportForm } from '@/components/report-form';
 
 // 評価の型定義
@@ -27,11 +27,13 @@ type Evaluation = {
   };
   useful_count: number;
   is_useful?: boolean; // ユーザーが「役に立った」を押したかどうか
+  is_invisible?: boolean; // 評価が非表示かどうか
 };
 
 // コンポーネントのプロパティ
 interface EvaluationListProps {
   evaluations: Evaluation[];
+  isAdmin?: boolean; // 管理者かどうか
 }
 
 // 通報モーダルの状態
@@ -103,7 +105,7 @@ const saveUserUseful = (evaluationId: number, isUseful: boolean) => {
 };
 
 // レビュー一覧表示コンポーネント
-export function EvaluationList({ evaluations: initialEvaluations }: EvaluationListProps) {
+export function EvaluationList({ evaluations: initialEvaluations, isAdmin = false }: EvaluationListProps) {
   // 評価一覧の状態
   const [evaluations, setEvaluations] = useState<Evaluation[]>(initialEvaluations);
   
@@ -112,6 +114,25 @@ export function EvaluationList({ evaluations: initialEvaluations }: EvaluationLi
     isOpen: false,
     evaluationId: null,
   });
+  
+  // 非表示状態の確認
+  useEffect(() => {
+    const checkInvisibleStatus = async () => {
+      if (isAdmin && typeof window !== 'undefined') {
+        const updatedEvaluations = await Promise.all(
+          evaluations.map(async (evaluation) => {
+            const isInvisible = await checkEvaluationInvisible(evaluation.code, evaluation.evaluator);
+            return { ...evaluation, is_invisible: isInvisible };
+          })
+        );
+        setEvaluations(updatedEvaluations);
+      }
+    };
+    
+    if (isAdmin) {
+      checkInvisibleStatus();
+    }
+  }, [isAdmin, initialEvaluations]);
   
   // コンポーネントがマウントされたときに「役に立った」の状態を確認
   useEffect(() => {
@@ -172,6 +193,41 @@ export function EvaluationList({ evaluations: initialEvaluations }: EvaluationLi
     // 通報が送信された後の処理
     // 必要に応じて評価一覧を更新するなどの処理を追加
   };
+  
+  // 非表示ボタンのクリックハンドラ
+  const handleVisibilityToggle = async (evaluation: Evaluation, index: number) => {
+    // 確認ダイアログを表示
+    const message = evaluation.is_invisible
+      ? 'この評価を表示に戻しますか？'
+      : 'この評価を非表示にしますか？';
+    
+    if (!window.confirm(message)) {
+      return;
+    }
+    
+    try {
+      // フォームデータを作成
+      const formData = new FormData();
+      formData.append('code', evaluation.code);
+      formData.append('evaluator_id', evaluation.evaluator);
+      
+      // サーバーアクションを実行
+      const result = await toggleEvaluationVisibilityAction(formData);
+      
+      if (result.success) {
+        // 評価一覧を更新
+        const newEvaluations = [...evaluations];
+        const updatedEvaluation = newEvaluations[index];
+        
+        // 非表示状態を更新
+        updatedEvaluation.is_invisible = !updatedEvaluation.is_invisible;
+        
+        setEvaluations(newEvaluations);
+      }
+    } catch (error) {
+      console.error('評価の非表示/表示の切り替え中にエラーが発生しました', error);
+    }
+  };
 
   if (evaluations.length === 0) {
     return (
@@ -219,6 +275,20 @@ export function EvaluationList({ evaluations: initialEvaluations }: EvaluationLi
               >
                 <Flag size={16} />
               </button>
+              {isAdmin && (
+                <button
+                  className={`flex items-center gap-1 px-2 py-1 rounded-md ml-2 ${
+                    evaluation.is_invisible 
+                      ? 'text-green-500 hover:text-green-600 hover:bg-gray-100' 
+                      : 'text-gray-500 hover:text-red-500 hover:bg-gray-100'
+                  }`}
+                  onClick={() => handleVisibilityToggle(evaluation, index)}
+                  aria-label={evaluation.is_invisible ? '表示に戻す' : '非表示にする'}
+                  title={evaluation.is_invisible ? '表示に戻す' : '非表示にする'}
+                >
+                  {evaluation.is_invisible ? <Eye size={16} /> : <EyeOff size={16} />}
+                </button>
+              )}
             </div>
           </div>
           <div className="whitespace-pre-line text-gray-700">{evaluation.review}</div>

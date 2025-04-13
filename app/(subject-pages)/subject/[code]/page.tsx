@@ -100,7 +100,10 @@ export default async function SubjectPage({ params }: SubjectPageParams) {
         {/* レビュー一覧セクション */}
         <div className="mt-6">
           <h2 className="text-2xl font-semibold mb-4">レビュー一覧</h2>
-          <EvaluationList evaluations={JSON.parse(JSON.stringify(evaluations))} />
+          <EvaluationList 
+            evaluations={JSON.parse(JSON.stringify(evaluations))} 
+            isAdmin={isAdmin}
+          />
         </div>
       </div>
     </div>

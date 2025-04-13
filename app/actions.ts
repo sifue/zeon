@@ -625,3 +625,99 @@ export async function deleteReportAction(formData: FormData) {
     return { success: false };
   }
 }
+
+// 評価の非表示状態を確認する
+export const checkEvaluationInvisible = async (code: string, evaluatorId: string) => {
+  const supabase = await createClient();
+  
+  const { data, error } = await supabase
+    .from('invisible_evaluations')
+    .select('*')
+    .eq('code', code)
+    .eq('evaluator', evaluatorId)
+    .maybeSingle();
+  
+  if (error) {
+    return false;
+  }
+  
+  return !!data;
+};
+
+// 評価の非表示/表示を切り替える
+export const toggleEvaluationVisibility = async (code: string, evaluatorId: string) => {
+  const supabase = await createClient();
+  
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error('認証されていません');
+  }
+  
+  // 管理者かどうかをチェック
+  const isAdmin = await checkIsAdmin();
+  
+  if (!isAdmin) {
+    throw new Error('管理者権限がありません');
+  }
+  
+  // 現在の非表示状態を確認
+  const isInvisible = await checkEvaluationInvisible(code, evaluatorId);
+  
+  if (isInvisible) {
+    // 非表示状態を解除
+    const { error } = await supabase
+      .from('invisible_evaluations')
+      .delete()
+      .eq('code', code)
+      .eq('evaluator', evaluatorId);
+    
+    if (error) {
+      throw new Error(error.message);
+    }
+    
+    return { isInvisible: false, code, evaluatorId };
+  } else {
+    // 非表示状態にする
+    const { error } = await supabase
+      .from('invisible_evaluations')
+      .insert({
+        code,
+        evaluator: evaluatorId,
+        updated_by: user.id,
+        updated_at: new Date().toISOString(),
+      });
+    
+    if (error) {
+      throw new Error(error.message);
+    }
+    
+    return { isInvisible: true, code, evaluatorId };
+  }
+};
+
+// フォームアクション: 評価の非表示/表示を切り替える
+export async function toggleEvaluationVisibilityAction(formData: FormData) {
+  'use server';
+  
+  try {
+    const code = formData.get('code') as string;
+    const evaluatorId = formData.get('evaluator_id') as string;
+    
+    if (!code || !evaluatorId) {
+      throw new Error('科目コードまたは評価者IDが不正です');
+    }
+    
+    const result = await toggleEvaluationVisibility(code, evaluatorId);
+    
+    return { success: true, ...result };
+  } catch (error) {
+    console.error('評価の非表示/表示の切り替え中にエラーが発生しました', error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : '評価の非表示/表示の切り替え中にエラーが発生しました' 
+    };
+  }
+}
