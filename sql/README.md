@@ -1,0 +1,151 @@
+# ZEONデータベース構築スクリプト
+
+このディレクトリには、ZEONアプリケーションのデータベースを構築するためのSQLスクリプトが含まれています。
+
+## 概要
+
+ZEONは、ZEN大学のドメインのGoogleアカウントユーザーのみが利用できるクローズドなZEN大学の授業評価サイトです。このデータベースは、科目情報、評価、通報、「役に立った」などのデータを管理します。
+
+## 前提条件
+
+- Supabaseプロジェクトが作成済みであること
+- Supabaseプロジェクトへの管理者アクセス権があること
+- get-subjects MCPサーバーへのアクセス権があること（科目データの取得に使用）
+
+## セットアップ手順
+
+1. Supabaseダッシュボードにログインします。
+2. 「SQL Editor」を開きます。
+3. 以下のSQLスクリプトを順番に実行します：
+   1. `01_create_tables.sql`
+   2. `02_setup_rls_policies.sql`
+   3. `03_initial_data.sql`
+4. 必要に応じて、追加の科目データを登録します（後述の「科目データの登録方法」を参照）。
+
+## 各SQLファイルの説明
+
+### 01_create_tables.sql
+
+このスクリプトは、ZEONアプリケーションに必要なテーブルを作成します。以下のテーブルが含まれています：
+
+- `admins`：管理者情報
+- `ban_users`：BANされたユーザー情報
+- `subjects`：科目情報
+- `evaluations`：評価情報
+- `invisible_evaluations`：非表示評価情報
+- `reports`：通報情報
+- `usefuls`：「役に立った」情報
+
+また、各テーブルに必要なインデックスも作成します。
+
+### 02_setup_rls_policies.sql
+
+このスクリプトは、Row Level Security（RLS）ポリシーを設定します。これにより、各テーブルに対するアクセス制御が実現されます。
+
+主なポリシーは以下の通りです：
+
+- 管理者テーブル：管理者のみが閲覧・編集可能
+- BANされたユーザーテーブル：管理者のみが閲覧・編集可能
+- 科目テーブル：全ての認証ユーザーが閲覧可能、編集は管理者のみ可能
+- 評価テーブル：全ての認証ユーザーが閲覧可能、投稿者自身のみが編集・削除可能
+- 非表示評価テーブル：管理者のみが閲覧・編集可能
+- 通報テーブル：投稿者自身が自分の通報を閲覧・編集・削除可能、管理者は全ての通報を閲覧・編集・削除可能
+- 役に立ったテーブル：全ての認証ユーザーが閲覧可能、投稿者自身が自分の「役に立った」を追加・編集・削除可能
+
+### 03_initial_data.sql
+
+このスクリプトは、初期データを投入します。以下のデータが含まれています：
+
+- 管理者データ：吉村総一郎（ID: 1bebff21-b3a4-4498-9b2a-2a93cc75247f）
+- サンプル科目データ：ITリテラシー
+
+## 科目データの登録方法
+
+ZEN大学のすべての科目データを登録するには、以下の手順を実行します：
+
+### 方法1: 自動生成スクリプトを使用する（推奨）
+
+1. `sql/03_initial_data_generator.js` スクリプトを実行します。
+   ```bash
+   cd c:/Users/sifue/workspace/zeon
+   node sql/03_initial_data_generator.js
+   ```
+
+2. スクリプトは、ZEN大学シラバス API サーバーから科目の詳細情報を取得し、年次ごとにSQLファイルを生成します。
+   - `sql/03_initial_data_subjects_grade1.sql`（1年次の科目）
+   - `sql/03_initial_data_subjects_grade2.sql`（2年次の科目）
+   - `sql/03_initial_data_subjects_grade3.sql`（3年次の科目）
+   - `sql/03_initial_data_subjects_grade4.sql`（4年次の科目）
+
+3. 生成されたSQLファイルをSupabaseプロジェクトで実行します。
+
+### 方法2: 手動で登録する
+
+1. get-subjects MCPサーバーを使用して科目の詳細情報を取得します。
+   ```
+   get-a-subject-with-detail(enrollment_grade=1, freeword="科目名")
+   ```
+
+2. 取得した情報を以下のテンプレートに当てはめて、SQLコマンドを生成します。
+   ```sql
+   INSERT INTO public.subjects (
+     code, name, description, opening_year, faculties, enrollment_grade,
+     teaching_method, subject_requirement, credit, quarters, objective,
+     evaluation_system, special_notes, subject_categories, updated_at
+   ) VALUES (
+     '科目コード',
+     '科目名',
+     '説明',
+     開講年度,
+     '[{"name": "教員名", "role": "役割"}]',
+     想定年次,
+     '授業形態',
+     '必修/選択',
+     単位数,
+     '["開講時期1", "開講時期2"]',
+     '授業の目標',
+     '評価方法',
+     '特記事項',
+     '["科目カテゴリ"]',
+     now()
+   ) ON CONFLICT (code) DO UPDATE SET
+     name = EXCLUDED.name,
+     description = EXCLUDED.description,
+     opening_year = EXCLUDED.opening_year,
+     faculties = EXCLUDED.faculties,
+     enrollment_grade = EXCLUDED.enrollment_grade,
+     teaching_method = EXCLUDED.teaching_method,
+     subject_requirement = EXCLUDED.subject_requirement,
+     credit = EXCLUDED.credit,
+     quarters = EXCLUDED.quarters,
+     objective = EXCLUDED.objective,
+     evaluation_system = EXCLUDED.evaluation_system,
+     special_notes = EXCLUDED.special_notes,
+     subject_categories = EXCLUDED.subject_categories,
+     updated_at = EXCLUDED.updated_at;
+   ```
+
+3. 生成したSQLコマンドをファイルに追加するか、別のSQLファイルとして保存します。
+4. Supabaseプロジェクトで実行します。
+
+科目データが多い場合は、複数のSQLファイルに分割することをお勧めします。例えば：
+- `03_initial_data_subjects_1.sql`
+- `03_initial_data_subjects_2.sql`
+- ...
+
+### 注意事項
+
+- 「特記事項参照」と書かれた科目は除外してください。
+  - 特記事項参照(2025年度) (1年次)
+  - 特記事項参照(2026年度) (2年次)
+  - 特記事項参照(2027年度) (3年次)
+  - 特記事項参照(2028年度) (4年次)
+
+## 注意事項
+
+- このスクリプトは、既存のテーブルがある場合は作成をスキップします（`IF NOT EXISTS`）。
+- 管理者データと科目データは、既存のデータがある場合は更新します（`ON CONFLICT ... DO UPDATE`）。
+- RLSポリシーは、既存のポリシーがある場合は上書きします。同じ名前のポリシーが既に存在する場合は、先に削除する必要があります。
+- 科目データの登録には、get-subjects MCPサーバーへのアクセス権が必要です。
+- BANされたユーザーは、評価の閲覧・投稿ができません。
+- 非表示評価は、一般ユーザーには表示されません。
