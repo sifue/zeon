@@ -57,13 +57,12 @@ ZEONは、ZEN大学のドメインのGoogleアカウントユーザーのみが�
 このスクリプトは、初期データを投入します。以下のデータが含まれています：
 
 - 管理者データ：吉村総一郎（ID: 1bebff21-b3a4-4498-9b2a-2a93cc75247f）
-- サンプル科目データ：ITリテラシー
 
 ## 科目データの登録方法
 
 ZEN大学のすべての科目データを登録するには、以下の手順を実行します：
 
-### 方法1: 自動生成スクリプトを使用する（推奨）
+### 方法: 自動生成スクリプトを使用する（推奨）
 
 1. `sql/03_initial_data_generator.js` スクリプトを実行します。
    ```bash
@@ -79,60 +78,6 @@ ZEN大学のすべての科目データを登録するには、以下の手順�
 
 3. 生成されたSQLファイルをSupabaseプロジェクトで実行します。
 
-### 方法2: 手動で登録する
-
-1. get-subjects MCPサーバーを使用して科目の詳細情報を取得します。
-   ```
-   get-a-subject-with-detail(enrollment_grade=1, freeword="科目名")
-   ```
-
-2. 取得した情報を以下のテンプレートに当てはめて、SQLコマンドを生成します。
-   ```sql
-   INSERT INTO public.subjects (
-     code, name, description, opening_year, faculties, enrollment_grade,
-     teaching_method, subject_requirement, credit, quarters, objective,
-     evaluation_system, special_notes, subject_categories, updated_at
-   ) VALUES (
-     '科目コード',
-     '科目名',
-     '説明',
-     開講年度,
-     '[{"name": "教員名", "role": "役割"}]',
-     想定年次,
-     '授業形態',
-     '必修/選択',
-     単位数,
-     '["開講時期1", "開講時期2"]',
-     '授業の目標',
-     '評価方法',
-     '特記事項',
-     '["科目カテゴリ"]',
-     now()
-   ) ON CONFLICT (code) DO UPDATE SET
-     name = EXCLUDED.name,
-     description = EXCLUDED.description,
-     opening_year = EXCLUDED.opening_year,
-     faculties = EXCLUDED.faculties,
-     enrollment_grade = EXCLUDED.enrollment_grade,
-     teaching_method = EXCLUDED.teaching_method,
-     subject_requirement = EXCLUDED.subject_requirement,
-     credit = EXCLUDED.credit,
-     quarters = EXCLUDED.quarters,
-     objective = EXCLUDED.objective,
-     evaluation_system = EXCLUDED.evaluation_system,
-     special_notes = EXCLUDED.special_notes,
-     subject_categories = EXCLUDED.subject_categories,
-     updated_at = EXCLUDED.updated_at;
-   ```
-
-3. 生成したSQLコマンドをファイルに追加するか、別のSQLファイルとして保存します。
-4. Supabaseプロジェクトで実行します。
-
-科目データが多い場合は、複数のSQLファイルに分割することをお勧めします。例えば：
-- `03_initial_data_subjects_1.sql`
-- `03_initial_data_subjects_2.sql`
-- ...
-
 ### 注意事項
 
 - 「特記事項参照」と書かれた科目は除外してください。
@@ -146,6 +91,5 @@ ZEN大学のすべての科目データを登録するには、以下の手順�
 - このスクリプトは、既存のテーブルがある場合は作成をスキップします（`IF NOT EXISTS`）。
 - 管理者データと科目データは、既存のデータがある場合は更新します（`ON CONFLICT ... DO UPDATE`）。
 - RLSポリシーは、既存のポリシーがある場合は上書きします。同じ名前のポリシーが既に存在する場合は、先に削除する必要があります。
-- 科目データの登録には、get-subjects MCPサーバーへのアクセス権が必要です。
 - BANされたユーザーは、評価の閲覧・投稿ができません。
 - 非表示評価は、一般ユーザーには表示されません。
