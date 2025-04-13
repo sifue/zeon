@@ -1,4 +1,4 @@
-import NextLogo from './next-logo';
+import ZionLogo from './zeon-logo';
 import SupabaseLogo from './supabase-logo';
 
 export default function Header() {
@@ -14,7 +14,7 @@ export default function Header() {
         </a>
         <span className="border-l rotate-45 h-6" />
         <a href="https://nextjs.org/" target="_blank" rel="noreferrer">
-          <NextLogo />
+          <ZionLogo />
         </a>
       </div>
       <h1 className="sr-only">Supabase and Next.js Starter Template</h1>
