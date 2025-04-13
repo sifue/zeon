@@ -776,6 +776,120 @@ export async function toggleEvaluationVisibilityAction(formData: FormData) {
   }
 }
 
+// 最近の評価を取得する（ダッシュボード用）
+export const getRecentEvaluations = async (limit = 5) => {
+  const supabase = await createClient();
+  
+  // 非表示評価のIDを取得
+  const { data: invisibleEvals } = await supabase
+    .from('invisible_evaluations')
+    .select('code, evaluator');
+  
+  // 非表示評価のIDをセットに変換
+  const invisibleSet = new Set<string>();
+  if (invisibleEvals) {
+    invisibleEvals.forEach(item => {
+      invisibleSet.add(`${item.code}-${item.evaluator}`);
+    });
+  }
+  
+  // 最近の評価を取得
+  const { data: evaluations, error } = await supabase
+    .from('evaluations')
+    .select(`
+      id,
+      code,
+      evaluator,
+      evaluation,
+      review,
+      year,
+      quarter,
+      created_at,
+      updated_at
+    `)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  
+  if (error || !evaluations) {
+    return [];
+  }
+  
+  // 管理者かどうかをチェック
+  const isAdmin = await checkIsAdmin();
+  
+  // 管理者でない場合は非表示評価を除外
+  let filteredEvaluations = evaluations;
+  if (!isAdmin) {
+    filteredEvaluations = evaluations.filter(evaluation => 
+      !invisibleSet.has(`${evaluation.code}-${evaluation.evaluator}`)
+    );
+  }
+  
+  // 評価にダミーのユーザー情報と非表示状態を追加
+  const evaluationsWithUsers = filteredEvaluations.map(evaluation => {
+    const isInvisible = invisibleSet.has(`${evaluation.code}-${evaluation.evaluator}`);
+    
+    return {
+      ...evaluation,
+      users: {
+        email: `user-${evaluation.evaluator.substring(0, 8)}@example.com`,
+        raw_user_meta_data: {
+          name: `ユーザー${evaluation.evaluator.substring(0, 4)}`
+        }
+      },
+      is_invisible: isInvisible
+    };
+  });
+  
+  // 科目情報を取得
+  const { data: subjects } = await supabase
+    .from('subjects')
+    .select('code, name, faculties');
+  
+  // 科目情報をマッピング
+  const subjectMap: Record<string, { name: string; faculties: any }> = {};
+  if (subjects) {
+    subjects.forEach(subject => {
+      subjectMap[subject.code] = {
+        name: subject.name,
+        faculties: subject.faculties
+      };
+    });
+  }
+  
+  // 役に立った数を取得
+  const { data: usefuls } = await supabase
+    .from('usefuls')
+    .select('evaluation_id')
+    .in('evaluation_id', evaluationsWithUsers.map(e => e.id));
+  
+  // 役に立った数をマッピング
+  const usefulCounts: Record<number, number> = {};
+  if (usefuls) {
+    // 各評価IDごとに役に立った数をカウント
+    usefuls.forEach((item: { evaluation_id: number }) => {
+      if (!usefulCounts[item.evaluation_id]) {
+        usefulCounts[item.evaluation_id] = 0;
+      }
+      usefulCounts[item.evaluation_id]++;
+    });
+  }
+  
+  // 評価に役に立った数と科目情報を追加
+  const evaluationsWithDetails = evaluationsWithUsers.map(evaluation => {
+    const subject = subjectMap[evaluation.code] || { name: '不明', faculties: [] };
+    
+    return {
+      ...evaluation,
+      subject_name: subject.name,
+      faculties: subject.faculties,
+      useful_count: usefulCounts[evaluation.id] || 0
+    };
+  });
+  
+  return evaluationsWithDetails;
+};
+
 // 科目コードに基づいて通報一覧を取得する
 export const getReportsBySubjectCode = async (code: string) => {
   const supabase = await createClient();

@@ -1,5 +1,6 @@
-import { getSubjects, getSubjectEvaluations, checkIsAdmin } from '@/app/actions';
+import { getSubjects, getSubjectEvaluations, checkIsAdmin, getRecentEvaluations } from '@/app/actions';
 import { SubjectList } from '@/components/subject-list';
+import { RecentEvaluations } from '@/components/recent-evaluations';
 import { createClient } from '@/utils/supabase/server';
 import { InfoIcon } from 'lucide-react';
 import { redirect } from 'next/navigation';
@@ -33,6 +34,9 @@ export default async function DashboardPage() {
   
   // 管理者かどうかをチェック
   const isAdmin = await checkIsAdmin();
+  
+  // 最近の評価を取得
+  const recentEvaluations = await getRecentEvaluations(10);
 
   return (
     <div className="flex-1 w-full flex flex-col gap-8 p-4 md:p-8">
@@ -45,6 +49,13 @@ export default async function DashboardPage() {
             管理者向け: 最新の通報を確認してください
           </div>
         )}
+      </div>
+      
+      <div className="flex flex-col gap-6">
+        <h2 className="text-2xl font-semibold">最近の評価 (最新10件)</h2>
+        <div className="overflow-hidden rounded-lg border p-4">
+          <RecentEvaluations evaluations={recentEvaluations} isAdmin={isAdmin} />
+        </div>
       </div>
       
       <div className="flex flex-col gap-6">
