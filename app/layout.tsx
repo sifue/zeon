@@ -61,12 +61,19 @@ export default function RootLayout({
               </nav>
               <div className="flex flex-col gap-20 max-w-5xl p-5">{children}</div>
 
-              <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-8 py-16">
-                <p>
-                  Powered by ZEON運営チーム
-                </p>
-                <ThemeSwitcher />
-                <FooterContactLink />
+              <footer className="w-full flex flex-col items-center justify-center border-t mx-auto text-center text-xs gap-4 py-16">
+                <div className="flex items-center gap-8">
+                  <p>
+                    Powered by ZEON運営チーム
+                  </p>
+                  <ThemeSwitcher />
+                  <FooterContactLink />
+                </div>
+                <div className="flex gap-4 mt-2">
+                  <Link href="/tos" className="text-xs hover:underline">利用規約</Link>
+                  <Link href="/privacy-policy" className="text-xs hover:underline">プライバシーポリシー</Link>
+                  <Link href="/community-guideline" className="text-xs hover:underline">コミュニティガイドライン</Link>
+                </div>
               </footer>
             </div>
           </main>

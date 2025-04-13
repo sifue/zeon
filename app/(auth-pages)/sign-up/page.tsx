@@ -42,6 +42,15 @@ export default async function Signup(props: { searchParams: Promise<Message> }) 
             <p>ZEN大学のzen.ac.jpドメインのGoogleアカウントのみが利用できます。</p>
             <p>その他のドメインのアカウントではサインインできません。</p>
           </div>
+          <div className="mt-4 text-xs text-gray-500">
+            <p>
+              アカウントを登録することで、
+              <Link href="/tos" className="text-primary hover:underline">利用規約</Link>、
+              <Link href="/privacy-policy" className="text-primary hover:underline">プライバシーポリシー</Link>、
+              <Link href="/community-guideline" className="text-primary hover:underline">コミュニティガイドライン</Link>
+              に同意したものとみなします。
+            </p>
+          </div>
         </div>
       </form>
     </>

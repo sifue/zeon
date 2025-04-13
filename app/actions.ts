@@ -807,7 +807,7 @@ export const getRecentEvaluations = async (limit = 5) => {
       created_at,
       updated_at
     `)
-    .order('created_at', { ascending: false })
+    .order('updated_at', { ascending: false })
     .limit(limit);
   
   if (error || !evaluations) {
