@@ -17,10 +17,10 @@ BEGIN
     ON CONFLICT (uid) DO NOTHING;
     
     -- ログ出力（デバッグ用）
-    RAISE NOTICE 'User % with email % has been banned because it is not a zen.ac.jp domain', NEW.id, NEW.email;
+    RAISE LOG 'User % with email % has been banned because it is not a zen.ac.jp domain', NEW.id, NEW.email;
   ELSE
     -- zen.ac.jpドメインの場合は何もしない
-    RAISE NOTICE 'User % with email % is allowed (zen.ac.jp domain)', NEW.id, NEW.email;
+    RAISE LOG 'User % with email % is allowed (zen.ac.jp domain)', NEW.id, NEW.email;
   END IF;
   
   RETURN NEW;
@@ -33,8 +33,7 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION auth.on_auth_user_created();
 
--- 3. 既存のユーザーに対して処理を実行（オプション）
--- 注意: 既存のユーザーに対して実行する場合は慎重に行ってください
+-- 3. 既存のユーザーに対して処理を実行
 DO $$
 DECLARE
   user_record RECORD;
@@ -52,7 +51,22 @@ BEGIN
     ON CONFLICT (uid) DO NOTHING;
     
     -- ログ出力（デバッグ用）
-    RAISE NOTICE 'Existing user % with email % has been banned (retroactive check)', user_record.id, user_record.email;
+    RAISE LOG 'Existing user % with email % has been banned (retroactive check)', user_record.id, user_record.email;
   END LOOP;
 END;
 $$;
+
+-- 4. banned_usersテーブルの内容を確認
+SELECT * FROM public.banned_users;
+
+-- 5. auth.usersテーブルの内容を確認（メールアドレスとbanned_usersテーブルとの関連を確認）
+SELECT 
+  u.id, 
+  u.email, 
+  CASE WHEN b.uid IS NOT NULL THEN 'BANNED' ELSE 'NOT BANNED' END AS status
+FROM 
+  auth.users u
+LEFT JOIN 
+  public.banned_users b ON u.id = b.uid
+ORDER BY 
+  u.created_at DESC;

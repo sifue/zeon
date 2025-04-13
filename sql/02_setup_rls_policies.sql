@@ -64,9 +64,12 @@ CREATE POLICY admin_delete ON public.admins
   FOR DELETE USING (public.is_admin());
 
 -- BANされたユーザーテーブル
--- 管理者のみが閲覧・編集可能
-CREATE POLICY banned_user_select ON public.banned_users
+-- 管理者は全てのレコードを閲覧可能、ユーザーは自分自身のレコードを閲覧可能
+CREATE POLICY banned_user_select_admin ON public.banned_users
   FOR SELECT USING (public.is_admin());
+
+CREATE POLICY banned_user_select_self ON public.banned_users
+  FOR SELECT USING (auth.uid() = uid);
 
 CREATE POLICY banned_user_insert ON public.banned_users
   FOR INSERT WITH CHECK (public.is_admin());

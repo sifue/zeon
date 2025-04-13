@@ -2,6 +2,7 @@ import FetchDataSteps from "@/components/tutorial/fetch-data-steps";
 import { createClient } from "@/utils/supabase/server";
 import { InfoIcon } from "lucide-react";
 import { redirect } from "next/navigation";
+import { checkBannedUser } from "@/app/check-banned";
 
 export default async function ProtectedPage() {
   const supabase = await createClient();
@@ -12,6 +13,15 @@ export default async function ProtectedPage() {
 
   if (!user) {
     return redirect("/sign-in");
+  }
+
+  // BANされたユーザーをチェック
+  const bannedCheck = await checkBannedUser();
+  
+  // BANされたユーザーの場合、トップページにリダイレクト
+  if (bannedCheck && bannedCheck.banned) {
+    const errorMessage = bannedCheck.message || "アカウントがBANされています";
+    redirect(`/?error=${encodeURIComponent(errorMessage)}`);
   }
 
   return (
