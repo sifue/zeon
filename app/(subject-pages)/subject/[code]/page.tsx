@@ -21,9 +21,9 @@ import { ArrowLeft } from 'lucide-react';
 
 // ページのパラメータの型定義
 interface SubjectPageParams {
-  params: {
+  params: Promise<{
     code: string;
-  };
+  }>;
 }
 
 export default async function SubjectPage({ params }: SubjectPageParams) {
