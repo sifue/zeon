@@ -1,4 +1,4 @@
-![ZEON logo](image/zion-log.png)
+![ZEON logo](image/zeon-log.png)
 
 <h1 align="center">ZEN大授業評価サイト ZEON (非公式)</h1>
 
