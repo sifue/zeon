@@ -19,6 +19,19 @@ export const metadata = {
   metadataBase: new URL(defaultUrl),
   title: 'ZEN大授業評価サイト ZEON (非公式)',
   description: 'ZEN大学の授業を評価・レビューできるプラットフォーム',
+  openGraph: {
+    title: 'ZEN大授業評価サイト ZEON (非公式)',
+    description: 'ZEN大学の授業を評価・レビューできるプラットフォーム',
+    url: defaultUrl,
+    siteName: 'ZEN大授業評価サイト ZEON',
+    locale: 'ja_JP',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'ZEN大授業評価サイト ZEON (非公式)',
+    description: 'ZEN大学の授業を評価・レビューできるプラットフォーム',
+  },
 };
 
 const geistSans = Geist({
