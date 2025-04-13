@@ -45,17 +45,10 @@ export const updateSession = async (request: NextRequest) => {
           .eq('uid', user.data.user.id)
           .maybeSingle();
 
-        console.log('Checking banned status for user:', user.data.user.id);
-        console.log('Banned user data:', bannedUser);
-        console.log('Error:', error);
-
         // BANされたユーザーの場合、自動的にログアウトしてトップページにリダイレクト
         if (bannedUser) {
-          console.log('User is banned, signing out');
-
           // ログアウト処理
           const { error: signOutError } = await supabase.auth.signOut();
-          console.log('Sign out error:', signOutError);
 
           // トップページにリダイレクト（エラーメッセージ付き）
           const redirectUrl = new URL('/', request.url);
@@ -72,12 +65,13 @@ export const updateSession = async (request: NextRequest) => {
     }
 
     // protected routes
-    if (request.nextUrl.pathname.startsWith('/protected') && user.error) {
+    if ((request.nextUrl.pathname.startsWith('/protected') || 
+         request.nextUrl.pathname.startsWith('/dashboard')) && user.error) {
       return NextResponse.redirect(new URL('/sign-in', request.url));
     }
 
     if (request.nextUrl.pathname === '/' && !user.error) {
-      return NextResponse.redirect(new URL('/protected', request.url));
+      return NextResponse.redirect(new URL('/dashboard', request.url));
     }
 
     return response;

@@ -15,11 +15,8 @@ export const checkBannedUser = async () => {
 
   if (userError || !user) {
     // ユーザーが取得できない場合は何もしない
-    console.log('No user found or error:', userError);
     return null;
   }
-
-  console.log('Checking banned status for user:', user.id);
 
   try {
     // banned_usersテーブルをチェック
@@ -29,12 +26,8 @@ export const checkBannedUser = async () => {
       .eq('uid', user.id)
       .maybeSingle();
 
-    console.log('Banned user check result:', bannedUser);
-    console.log('Error:', error);
-
     // BANされたユーザーの場合、自動的にログアウト
     if (bannedUser) {
-      console.log('User is banned, signing out');
 
       // ログアウト処理
       await supabase.auth.signOut();
@@ -49,7 +42,6 @@ export const checkBannedUser = async () => {
 
     return { banned: false };
   } catch (err) {
-    console.error('Error checking banned status:', err);
     return { banned: false };
   }
 };
