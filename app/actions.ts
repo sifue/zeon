@@ -452,3 +452,176 @@ export async function toggleUsefulAction(formData: FormData) {
     return { success: false };
   }
 }
+
+// 通報を取得する
+export const getReportByEvaluationId = async (evaluationId: number) => {
+  const supabase = await createClient();
+  
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  
+  if (!user) {
+    return null;
+  }
+  
+  const { data, error } = await supabase
+    .from('reports')
+    .select('*')
+    .eq('evaluation_id', evaluationId)
+    .eq('reporter', user.id)
+    .maybeSingle();
+  
+  if (error || !data) {
+    return null;
+  }
+  
+  return data;
+};
+
+// 通報を投稿または更新する
+export const submitReport = async (report: {
+  id?: number;
+  evaluation_id: number;
+  is_irrelevant: boolean;
+  is_inappropriate: boolean;
+  is_fake: boolean;
+  is_other: boolean;
+  comment: string;
+}) => {
+  const supabase = await createClient();
+  
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error('認証されていません');
+  }
+  
+  // 通報データを準備
+  const reportData = {
+    evaluation_id: report.evaluation_id,
+    reporter: user.id,
+    is_irrelevant: report.is_irrelevant,
+    is_inappropriate: report.is_inappropriate,
+    is_fake: report.is_fake,
+    is_other: report.is_other,
+    comment: report.comment,
+  };
+  
+  let result;
+  
+  // 既存の通報がある場合は更新、なければ新規作成
+  if (report.id) {
+    // 更新
+    result = await supabase
+      .from('reports')
+      .update(reportData)
+      .eq('id', report.id)
+      .eq('reporter', user.id); // 自分の通報のみ更新可能
+  } else {
+    // 新規作成
+    result = await supabase
+      .from('reports')
+      .insert({
+        ...reportData,
+        created_at: new Date().toISOString(),
+      });
+  }
+  
+  if (result.error) {
+    throw new Error(result.error.message);
+  }
+  
+  return result.data;
+};
+
+// 通報を削除する
+export const deleteReport = async (id: number) => {
+  const supabase = await createClient();
+  
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error('認証されていません');
+  }
+  
+  // 通報を削除
+  const { error } = await supabase
+    .from('reports')
+    .delete()
+    .eq('id', id)
+    .eq('reporter', user.id); // 自分の通報のみ削除可能
+  
+  if (error) {
+    throw new Error(error.message);
+  }
+  
+  return true;
+};
+
+// フォームアクション: 通報を投稿または更新する
+export async function submitReportAction(formData: FormData) {
+  'use server';
+  
+  try {
+    const evaluationId = parseInt(formData.get('evaluation_id') as string);
+    const id = formData.get('id') ? parseInt(formData.get('id') as string) : undefined;
+    const isIrrelevant = formData.get('is_irrelevant') === 'true';
+    const isInappropriate = formData.get('is_inappropriate') === 'true';
+    const isFake = formData.get('is_fake') === 'true';
+    const isOther = formData.get('is_other') === 'true';
+    const comment = formData.get('comment') as string || '';
+    
+    if (isNaN(evaluationId)) {
+      throw new Error('評価IDが不正です');
+    }
+    
+    // 少なくとも1つの理由が選択されているか確認
+    if (!isIrrelevant && !isInappropriate && !isFake && !isOther) {
+      throw new Error('通報理由を選択してください');
+    }
+    
+    await submitReport({
+      id,
+      evaluation_id: evaluationId,
+      is_irrelevant: isIrrelevant,
+      is_inappropriate: isInappropriate,
+      is_fake: isFake,
+      is_other: isOther,
+      comment,
+    });
+    
+    return { success: true, evaluationId };
+  } catch (error) {
+    console.error('通報の送信中にエラーが発生しました', error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : '通報の送信中にエラーが発生しました' 
+    };
+  }
+}
+
+// フォームアクション: 通報を削除する
+export async function deleteReportAction(formData: FormData) {
+  'use server';
+  
+  try {
+    const id = parseInt(formData.get('id') as string);
+    const evaluationId = parseInt(formData.get('evaluation_id') as string);
+    
+    if (isNaN(id) || isNaN(evaluationId)) {
+      throw new Error('通報IDまたは評価IDが不正です');
+    }
+    
+    await deleteReport(id);
+    
+    return { success: true, evaluationId };
+  } catch (error) {
+    console.error('通報の削除中にエラーが発生しました', error);
+    return { success: false };
+  }
+}

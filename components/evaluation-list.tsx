@@ -6,6 +6,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { toggleUsefulAction } from '@/app/actions';
 import { ThumbsUp, Flag } from 'lucide-react';
+import { ReportForm } from '@/components/report-form';
 
 // 評価の型定義
 type Evaluation = {
@@ -31,6 +32,12 @@ type Evaluation = {
 // コンポーネントのプロパティ
 interface EvaluationListProps {
   evaluations: Evaluation[];
+}
+
+// 通報モーダルの状態
+interface ReportModalState {
+  isOpen: boolean;
+  evaluationId: number | null;
 }
 
 // 評価者名を表示するヘルパー関数
@@ -100,6 +107,12 @@ export function EvaluationList({ evaluations: initialEvaluations }: EvaluationLi
   // 評価一覧の状態
   const [evaluations, setEvaluations] = useState<Evaluation[]>(initialEvaluations);
   
+  // 通報モーダルの状態
+  const [reportModal, setReportModal] = useState<ReportModalState>({
+    isOpen: false,
+    evaluationId: null,
+  });
+  
   // コンポーネントがマウントされたときに「役に立った」の状態を確認
   useEffect(() => {
     const checkUsefulStatus = async () => {
@@ -148,6 +161,17 @@ export function EvaluationList({ evaluations: initialEvaluations }: EvaluationLi
       console.error('役に立ったの操作中にエラーが発生しました', error);
     }
   };
+  
+  // 通報モーダルを閉じるハンドラ
+  const handleCloseReportModal = () => {
+    setReportModal({ isOpen: false, evaluationId: null });
+  };
+  
+  // 通報送信後のハンドラ
+  const handleReportSubmit = () => {
+    // 通報が送信された後の処理
+    // 必要に応じて評価一覧を更新するなどの処理を追加
+  };
 
   if (evaluations.length === 0) {
     return (
@@ -190,6 +214,7 @@ export function EvaluationList({ evaluations: initialEvaluations }: EvaluationLi
               </button>
               <button
                 className="text-gray-500 hover:text-red-500 hover:bg-gray-100 px-2 py-1 rounded-md ml-2 flex items-center"
+                onClick={() => setReportModal({ isOpen: true, evaluationId: evaluation.id })}
                 aria-label="通報"
               >
                 <Flag size={16} />
@@ -199,6 +224,15 @@ export function EvaluationList({ evaluations: initialEvaluations }: EvaluationLi
           <div className="whitespace-pre-line text-gray-700">{evaluation.review}</div>
         </div>
       ))}
+      
+      {/* 通報フォームモーダル */}
+      {reportModal.isOpen && reportModal.evaluationId && (
+        <ReportForm
+          evaluationId={reportModal.evaluationId}
+          onClose={handleCloseReportModal}
+          onSubmit={handleReportSubmit}
+        />
+      )}
     </div>
   );
 }
