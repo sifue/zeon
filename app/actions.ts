@@ -34,22 +34,41 @@ export const getSubjects = async () => {
 export const getSubjectEvaluations = async () => {
   const supabase = await createClient();
   
+  // 非表示評価のIDを取得
+  const { data: invisibleEvals } = await supabase
+    .from('invisible_evaluations')
+    .select('code, evaluator');
+  
+  // 非表示評価のIDをセットに変換
+  const invisibleSet = new Set<string>();
+  if (invisibleEvals) {
+    invisibleEvals.forEach(item => {
+      invisibleSet.add(`${item.code}-${item.evaluator}`);
+    });
+  }
+  
   // 科目ごとの評価数と平均評価を取得
   const { data, error } = await supabase
     .from('evaluations')
     .select(`
       code,
-      evaluation
+      evaluation,
+      evaluator
     `);
   
   if (error) {
     return {};
   }
   
+  // 非表示評価を除外
+  const filteredData = data.filter(evaluation => 
+    !invisibleSet.has(`${evaluation.code}-${evaluation.evaluator}`)
+  );
+  
   // 科目ごとに評価数と平均評価を計算
   const evaluationStats: Record<string, { count: number; average: number }> = {};
   
-  data.forEach((evaluation) => {
+  filteredData.forEach((evaluation) => {
     if (!evaluationStats[evaluation.code]) {
       evaluationStats[evaluation.code] = {
         count: 0,
