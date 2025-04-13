@@ -143,7 +143,7 @@ export const getEvaluationsBySubjectCode = async (code: string) => {
       updated_at
     `)
     .eq('code', code)
-    .order('created_at', { ascending: false });
+    .order('updated_at', { ascending: false });
   
   if (error || !evaluations) {
     return [];

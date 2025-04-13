@@ -49,6 +49,8 @@ export function ReportForm({ evaluationId, onClose, onSubmit }: ReportFormProps)
           setIsFake(report.is_fake);
           setIsOther(report.is_other);
           setComment(report.comment || '');
+          // 既存の通報がある場合は成功状態にして読み取りモードにする
+          setSuccess(true);
         }
       } catch (error) {
         console.error('通報の取得中にエラーが発生しました', error);
@@ -156,15 +158,37 @@ export function ReportForm({ evaluationId, onClose, onSubmit }: ReportFormProps)
         </button>
         
         <h2 className="text-xl font-semibold mb-4">
-          {existingReport ? '通報を編集' : '通報する'}
+          {existingReport ? '通報内容' : '通報する'}
         </h2>
         
         {success ? (
           <div className="text-green-600 font-medium py-4 text-center">
-            {existingReport ? '通報を更新しました' : '通報を送信しました'}
+            {existingReport ? '通報済みです' : '通報を送信しました'}
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* 通報に関する注意事項 - 新規通報時のみ表示 */}
+            {!existingReport && (
+              <div className="bg-blue-50 p-3 rounded-md mb-4 text-sm">
+                <p className="font-medium text-blue-800 mb-1">通報に関する注意事項</p>
+                <p className="text-blue-700 mb-2">評価は評価者によって変更される可能性があります。以下のような内容が通報の対象となります：</p>
+                <ul className="list-disc pl-5 text-blue-700 space-y-1">
+                  <li><span className="font-medium">無関係</span>：授業内容と全く関係のない投稿</li>
+                  <li><span className="font-medium">不適切</span>：誹謗中傷、差別的表現、プライバシー侵害など</li>
+                  <li><span className="font-medium">フェイク</span>：明らかに事実と異なる内容や捏造された情報</li>
+                  <li><span className="font-medium">その他</span>：上記に当てはまらないが問題のある内容</li>
+                </ul>
+              </div>
+            )}
+            
+            {/* 既存の通報がある場合の注意事項 */}
+            {existingReport && (
+              <div className="bg-yellow-50 p-3 rounded-md mb-4 text-sm">
+                <p className="font-medium text-yellow-800">通報済みの内容</p>
+                <p className="text-yellow-700">一度送信した通報は変更できません。内容をご確認ください。</p>
+              </div>
+            )}
+            
             {/* 通報理由 */}
             <div>
               <p className="font-medium mb-2">通報理由</p>
@@ -174,6 +198,7 @@ export function ReportForm({ evaluationId, onClose, onSubmit }: ReportFormProps)
                     type="checkbox"
                     checked={isIrrelevant}
                     onChange={(e) => setIsIrrelevant(e.target.checked)}
+                    disabled={!!existingReport}
                     className="mr-2"
                   />
                   無関係
@@ -183,6 +208,7 @@ export function ReportForm({ evaluationId, onClose, onSubmit }: ReportFormProps)
                     type="checkbox"
                     checked={isInappropriate}
                     onChange={(e) => setIsInappropriate(e.target.checked)}
+                    disabled={!!existingReport}
                     className="mr-2"
                   />
                   不適切
@@ -192,6 +218,7 @@ export function ReportForm({ evaluationId, onClose, onSubmit }: ReportFormProps)
                     type="checkbox"
                     checked={isFake}
                     onChange={(e) => setIsFake(e.target.checked)}
+                    disabled={!!existingReport}
                     className="mr-2"
                   />
                   フェイク
@@ -201,6 +228,7 @@ export function ReportForm({ evaluationId, onClose, onSubmit }: ReportFormProps)
                     type="checkbox"
                     checked={isOther}
                     onChange={(e) => setIsOther(e.target.checked)}
+                    disabled={!!existingReport}
                     className="mr-2"
                   />
                   その他
@@ -219,7 +247,12 @@ export function ReportForm({ evaluationId, onClose, onSubmit }: ReportFormProps)
                 onChange={(e) => setComment(e.target.value)}
                 rows={3}
                 placeholder="通報の詳細を入力してください..."
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                disabled={!!existingReport}
+                className={`w-full rounded-md border-gray-300 shadow-sm ${
+                  existingReport 
+                    ? 'bg-gray-100 text-gray-700' 
+                    : 'focus:border-blue-500 focus:ring-blue-500'
+                }`}
               />
             </div>
             
@@ -230,41 +263,21 @@ export function ReportForm({ evaluationId, onClose, onSubmit }: ReportFormProps)
             
             {/* ボタン */}
             <div className="flex justify-between">
-              {existingReport ? (
-                <>
-                  <button
-                    type="button"
-                    onClick={handleDelete}
-                    disabled={isSubmitting || isDeleting}
-                    className="px-4 py-2 border border-red-600 text-red-600 rounded-md hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
-                  >
-                    {isDeleting ? '削除中...' : '削除'}
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting || isDeleting}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-                  >
-                    {isSubmitting ? '更新中...' : '更新'}
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-                  >
-                    キャンセル
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-                  >
-                    {isSubmitting ? '送信中...' : '送信'}
-                  </button>
-                </>
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+              >
+                {existingReport ? '閉じる' : 'キャンセル'}
+              </button>
+              {!existingReport && (
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                >
+                  {isSubmitting ? '送信中...' : '送信'}
+                </button>
               )}
             </div>
           </form>
