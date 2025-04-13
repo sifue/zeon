@@ -23,6 +23,12 @@ Googleアカウント認証を用いて、ZEN大学のドメインのGoogleア�
 
 また通報数が3件以上のレビューは、運営が確認し、必要に応じて非表示にすることができる。
 
+## 各種ドキュメント
+
+- [利用規約](docs/TOS.md)
+- [プライバシーポリシー](docs/PRIVACYPOLICY.md)
+- [コミュニティガイドライン](docs/COMMUNITYGUIDELINE.md)
+
 ## 技術スタック
 ### 言語/プラットフォーム
 - Node.js
