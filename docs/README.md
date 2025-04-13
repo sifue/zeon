@@ -361,3 +361,29 @@ Supabaseのデータベーストリガー機能を使用して、ユーザーサ
 - この設定は`sql/04_auth_hooks_setup.sql`で定義されており、データベースの再構築時にも設定が維持されます
 
 これにより、zen.ac.jpドメイン以外のGoogleアカウントでサインアップしたユーザーは自動的にブロックされ、アプリケーションを利用できなくなります。
+
+## 運用に関するSQL
+
+### 管理者の追加
+
+```sql
+INSERT INTO public.admin (uid) VALUES ('<uid>') ON CONFLICT DO NOTHING;
+```
+### 管理者の削除
+
+```sql
+DELETE FROM public.admin WHERE uid = '<uid>';
+```
+
+### BANされたユーザーの追加
+
+```sql
+INSERT INTO public.banned_users (uid) VALUES ('<uid>') ON CONFLICT DO NOTHING;
+```
+
+### BANされたユーザーの削除
+**zen.ac.jpドメインのGoogleアカウントでサインアップしたユーザーは自動的にBANされますが、削除することでユーザーとして使うことができます。これを使って開発や検証を楽にすることができます。**
+
+```sql
+DELETE FROM public.banned_users WHERE uid = '<uid>';
+```

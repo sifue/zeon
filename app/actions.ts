@@ -34,6 +34,9 @@ export const getSubjects = async () => {
 export const getSubjectEvaluations = async () => {
   const supabase = await createClient();
   
+  // 管理者かどうかをチェック
+  const isAdmin = await checkIsAdmin();
+  
   // 非表示評価のIDを取得
   const { data: invisibleEvals } = await supabase
     .from('invisible_evaluations')
@@ -43,7 +46,8 @@ export const getSubjectEvaluations = async () => {
   const invisibleSet = new Set<string>();
   if (invisibleEvals) {
     invisibleEvals.forEach(item => {
-      invisibleSet.add(`${item.code}-${item.evaluator}`);
+      const key = `${item.code}-${item.evaluator}`;
+      invisibleSet.add(key);
     });
   }
   
@@ -60,10 +64,15 @@ export const getSubjectEvaluations = async () => {
     return {};
   }
   
-  // 非表示評価を除外
-  const filteredData = data.filter(evaluation => 
-    !invisibleSet.has(`${evaluation.code}-${evaluation.evaluator}`)
-  );
+  // 管理者でない場合は非表示評価を除外
+  let filteredData = data;
+  if (!isAdmin) {
+    filteredData = data.filter(evaluation => 
+      !invisibleSet.has(`${evaluation.code}-${evaluation.evaluator}`)
+    );
+  }
+  
+  // 非表示評価のセットとフィルタリング前後の評価数
   
   // 科目ごとに評価数と平均評価を計算
   const evaluationStats: Record<string, { count: number; average: number }> = {};
@@ -124,7 +133,8 @@ export const getEvaluationsBySubjectCode = async (code: string) => {
   const invisibleSet = new Set<string>();
   if (invisibleEvals) {
     invisibleEvals.forEach(item => {
-      invisibleSet.add(`${item.code}-${item.evaluator}`);
+      const key = `${item.code}-${item.evaluator}`;
+      invisibleSet.add(key);
     });
   }
   
@@ -156,6 +166,8 @@ export const getEvaluationsBySubjectCode = async (code: string) => {
       !invisibleSet.has(`${evaluation.code}-${evaluation.evaluator}`)
     );
   }
+  
+  // 非表示評価のセットとフィルタリング前後の評価数
   
   // 評価にダミーのユーザー情報と非表示状態を追加
   const evaluationsWithUsers = filteredEvaluations.map(evaluation => {
@@ -205,17 +217,49 @@ export const getEvaluationsBySubjectCode = async (code: string) => {
 export const getEvaluationStatsByCode = async (code: string) => {
   const supabase = await createClient();
   
+  // 管理者かどうかをチェック
+  const isAdmin = await checkIsAdmin();
+  
+  // 非表示評価のIDを取得
+  const { data: invisibleEvals } = await supabase
+    .from('invisible_evaluations')
+    .select('code, evaluator');
+  
+  // 非表示評価のIDをセットに変換
+  const invisibleSet = new Set<string>();
+  if (invisibleEvals) {
+    invisibleEvals.forEach(item => {
+      const key = `${item.code}-${item.evaluator}`;
+      invisibleSet.add(key);
+    });
+  }
+  
+  // 評価を取得
   const { data, error } = await supabase
     .from('evaluations')
-    .select('evaluation')
+    .select('evaluation, evaluator')
     .eq('code', code);
   
   if (error || !data || data.length === 0) {
     return { count: 0, average: 0 };
   }
   
-  const count = data.length;
-  const sum = data.reduce((acc, curr) => acc + curr.evaluation, 0);
+  // 管理者でない場合は非表示評価を除外
+  let filteredData = data;
+  if (!isAdmin) {
+    filteredData = data.filter(evaluation => 
+      !invisibleSet.has(`${code}-${evaluation.evaluator}`)
+    );
+  }
+  
+  // 非表示評価のセットとフィルタリング前後の評価数
+  
+  if (filteredData.length === 0) {
+    return { count: 0, average: 0 };
+  }
+  
+  const count = filteredData.length;
+  const sum = filteredData.reduce((acc, curr) => acc + curr.evaluation, 0);
   const average = sum / count;
   
   return { count, average };
@@ -780,6 +824,9 @@ export async function toggleEvaluationVisibilityAction(formData: FormData) {
 export const getRecentEvaluations = async (limit = 5) => {
   const supabase = await createClient();
   
+  // 管理者かどうかをチェック
+  const isAdmin = await checkIsAdmin();
+  
   // 非表示評価のIDを取得
   const { data: invisibleEvals } = await supabase
     .from('invisible_evaluations')
@@ -789,7 +836,8 @@ export const getRecentEvaluations = async (limit = 5) => {
   const invisibleSet = new Set<string>();
   if (invisibleEvals) {
     invisibleEvals.forEach(item => {
-      invisibleSet.add(`${item.code}-${item.evaluator}`);
+      const key = `${item.code}-${item.evaluator}`;
+      invisibleSet.add(key);
     });
   }
   
@@ -814,9 +862,6 @@ export const getRecentEvaluations = async (limit = 5) => {
     return [];
   }
   
-  // 管理者かどうかをチェック
-  const isAdmin = await checkIsAdmin();
-  
   // 管理者でない場合は非表示評価を除外
   let filteredEvaluations = evaluations;
   if (!isAdmin) {
@@ -824,6 +869,8 @@ export const getRecentEvaluations = async (limit = 5) => {
       !invisibleSet.has(`${evaluation.code}-${evaluation.evaluator}`)
     );
   }
+  
+  // 非表示評価のセットとフィルタリング前後の評価数
   
   // 評価にダミーのユーザー情報と非表示状態を追加
   const evaluationsWithUsers = filteredEvaluations.map(evaluation => {

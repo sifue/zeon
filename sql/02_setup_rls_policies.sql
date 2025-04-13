@@ -140,9 +140,10 @@ CREATE POLICY evaluation_delete ON public.evaluations
   );
 
 -- 非表示評価テーブル
--- 管理者のみが閲覧・編集可能
+-- 全ての認証ユーザーが閲覧可能（RLSポリシーで非表示評価を除外するため）
+-- 管理者のみが編集可能
 CREATE POLICY invisible_evaluation_select ON public.invisible_evaluations
-  FOR SELECT USING (public.is_admin());
+  FOR SELECT USING (auth.role() = 'authenticated' AND NOT public.is_banned());
 
 CREATE POLICY invisible_evaluation_insert ON public.invisible_evaluations
   FOR INSERT WITH CHECK (public.is_admin());
