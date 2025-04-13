@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Trash2, Send, Edit2 } from 'lucide-react';
+import { Trash2, Send, Edit2, EyeOff } from 'lucide-react';
+import { checkEvaluationInvisible } from '@/app/actions';
 
 // 評価の型定義
 type Evaluation = {
@@ -92,7 +93,26 @@ export function EvaluationForm({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+  const [isInvisible, setIsInvisible] = useState<boolean>(false);
   const [formKey, setFormKey] = useState<number>(0); // フォームリセット用のキー
+  
+  // 非表示状態をチェック
+  useEffect(() => {
+    const checkInvisibleStatus = async () => {
+      if (subjectCode) {
+        try {
+          // createClient()からユーザー情報を取得する代わりに、
+          // 直接checkEvaluationInvisible関数を使用
+          const isInvisibleResult = await checkEvaluationInvisible(subjectCode, 'current');
+          setIsInvisible(isInvisibleResult);
+        } catch (err) {
+          console.error('非表示状態の確認中にエラーが発生しました', err);
+        }
+      }
+    };
+    
+    checkInvisibleStatus();
+  }, [subjectCode]);
 
   // NEXT_REDIRECTエラーかどうかをチェックする関数
   const isRedirectError = (error: any) => {
@@ -185,7 +205,23 @@ export function EvaluationForm({
         {existingEvaluation ? '評価を編集' : '新しい評価を投稿'}
       </h2>
       
-      <form key={formKey} action={handleSubmit} className="space-y-4">
+      {isInvisible && (
+        <div className="bg-red-100 text-red-800 px-4 py-3 rounded-md mb-4 text-sm font-medium flex items-center">
+          <EyeOff size={18} className="mr-2" />
+          <div>
+            <p className="font-bold">この評価は運営チームにより非表示に設定されています</p>
+            <p>評価の投稿や編集はできません。詳細はお問い合わせください。</p>
+          </div>
+        </div>
+      )}
+      
+      <form key={formKey} action={handleSubmit} className="space-y-4" onSubmit={(e) => {
+        if (isInvisible) {
+          e.preventDefault();
+          setError('あなたの評価はZEON運営チームにより非表示にされています');
+          return false;
+        }
+      }}>
         {/* 隠しフィールド */}
         <input type="hidden" name="code" value={subjectCode} />
         {existingEvaluation?.id && (

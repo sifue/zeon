@@ -109,6 +109,11 @@ CREATE POLICY evaluation_select ON public.evaluations
     )
   );
 
+-- 管理者向けの評価テーブルのSELECTポリシー
+-- 管理者は非表示の評価も含めて全ての評価を閲覧可能
+CREATE POLICY evaluation_select_admin ON public.evaluations
+  FOR SELECT USING (public.is_admin());
+
 CREATE POLICY evaluation_insert ON public.evaluations
   FOR INSERT WITH CHECK (
     auth.role() = 'authenticated' AND 

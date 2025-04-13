@@ -108,9 +108,6 @@ const saveUserUseful = (evaluationId: number, isUseful: boolean) => {
 
 // レビュー一覧表示コンポーネント
 export function EvaluationList({ evaluations: initialEvaluations, isAdmin = false }: EvaluationListProps) {
-  // 管理者かどうかをコンソールログに出力
-  console.log('isAdmin:', isAdmin);
-  
   // 評価一覧の状態
   const [evaluations, setEvaluations] = useState<Evaluation[]>(initialEvaluations);
   
@@ -248,12 +245,6 @@ export function EvaluationList({ evaluations: initialEvaluations, isAdmin = fals
 
   // 通報一覧の表示/非表示を切り替えるハンドラ
   const handleToggleReports = (index: number) => {
-    console.log(`通報一覧の表示/非表示を切り替え: index=${index}, evaluationId=${evaluations[index].id}`);
-    
-    // 現在の状態をコンソールに出力
-    console.log('現在の評価一覧:', evaluations);
-    console.log(`現在の状態: show_reports=${evaluations[index].show_reports}`);
-    
     // 新しい配列を作成して状態を更新
     const newEvaluations = evaluations.map((evaluation, i) => {
       if (i === index) {
@@ -265,9 +256,6 @@ export function EvaluationList({ evaluations: initialEvaluations, isAdmin = fals
       return evaluation;
     });
     
-    console.log(`新しい状態: show_reports=${newEvaluations[index].show_reports}`);
-    console.log('新しい評価一覧:', newEvaluations);
-    
     // 状態を更新
     setEvaluations(newEvaluations);
   };
@@ -275,7 +263,16 @@ export function EvaluationList({ evaluations: initialEvaluations, isAdmin = fals
   return (
     <div className="space-y-6">
       {evaluations.map((evaluation, index) => (
-        <div key={evaluation.id} className="bg-white rounded-lg shadow-md p-6">
+        <div 
+          key={evaluation.id} 
+          className={`bg-white rounded-lg shadow-md p-6 ${evaluation.is_invisible ? 'opacity-70 border-2 border-red-300' : ''}`}
+        >
+          {evaluation.is_invisible && (
+            <div className="bg-red-100 text-red-800 px-3 py-1 rounded-md mb-3 text-sm font-medium flex items-center">
+              <EyeOff size={16} className="mr-2" />
+              この評価は運営チームにより非表示に設定されています
+            </div>
+          )}
           <div className="flex justify-between items-start mb-4">
             <div>
               <div className="flex items-center gap-2 mb-1">

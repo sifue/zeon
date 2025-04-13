@@ -93,6 +93,9 @@ export const getSubjectByCode = async (code: string) => {
 export const getEvaluationsBySubjectCode = async (code: string) => {
   const supabase = await createClient();
   
+  // 管理者かどうかをチェック
+  const isAdmin = await checkIsAdmin();
+  
   // 非表示評価のIDを取得
   const { data: invisibleEvals } = await supabase
     .from('invisible_evaluations')
@@ -127,21 +130,29 @@ export const getEvaluationsBySubjectCode = async (code: string) => {
     return [];
   }
   
-  // 非表示評価を除外
-  const visibleEvaluations = evaluations.filter(evaluation => 
-    !invisibleSet.has(`${evaluation.code}-${evaluation.evaluator}`)
-  );
+  // 管理者でない場合は非表示評価を除外
+  let filteredEvaluations = evaluations;
+  if (!isAdmin) {
+    filteredEvaluations = evaluations.filter(evaluation => 
+      !invisibleSet.has(`${evaluation.code}-${evaluation.evaluator}`)
+    );
+  }
   
-  // 評価にダミーのユーザー情報を追加
-  const evaluationsWithUsers = visibleEvaluations.map(evaluation => ({
-    ...evaluation,
-    users: {
-      email: `user-${evaluation.evaluator.substring(0, 8)}@example.com`,
-      raw_user_meta_data: {
-        name: `ユーザー${evaluation.evaluator.substring(0, 4)}`
-      }
-    }
-  }));
+  // 評価にダミーのユーザー情報と非表示状態を追加
+  const evaluationsWithUsers = filteredEvaluations.map(evaluation => {
+    const isInvisible = invisibleSet.has(`${evaluation.code}-${evaluation.evaluator}`);
+    
+    return {
+      ...evaluation,
+      users: {
+        email: `user-${evaluation.evaluator.substring(0, 8)}@example.com`,
+        raw_user_meta_data: {
+          name: `ユーザー${evaluation.evaluator.substring(0, 4)}`
+        }
+      },
+      is_invisible: isInvisible
+    };
+  });
   
   // 役に立った数を取得
   const { data: usefuls } = await supabase
@@ -262,6 +273,12 @@ export const submitEvaluation = async (evaluation: {
     throw new Error('認証されていません');
   }
   
+  // 非表示状態をチェック
+  const isInvisible = await checkEvaluationInvisible(evaluation.code, user.id);
+  if (isInvisible) {
+    throw new Error('あなたの評価はZEON運営チームにより非表示にされています');
+  }
+  
   // 評価データを準備
   const evaluationData = {
     code: evaluation.code,
@@ -294,6 +311,13 @@ export const submitEvaluation = async (evaluation: {
   }
   
   if (result.error) {
+    // 重複キーエラーの場合は、非表示状態をチェック
+    if (result.error.message.includes('duplicate key value violates unique constraint')) {
+      const isInvisible = await checkEvaluationInvisible(evaluation.code, user.id);
+      if (isInvisible) {
+        throw new Error('あなたの評価はZEON運営チームにより非表示にされています');
+      }
+    }
     throw new Error(result.error.message);
   }
   
@@ -630,11 +654,22 @@ export async function deleteReportAction(formData: FormData) {
 export const checkEvaluationInvisible = async (code: string, evaluatorId: string) => {
   const supabase = await createClient();
   
+  // 'current'が指定された場合は現在のユーザーIDを使用
+  let actualEvaluatorId = evaluatorId;
+  
+  if (evaluatorId === 'current') {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return false;
+    }
+    actualEvaluatorId = user.id;
+  }
+  
   const { data, error } = await supabase
     .from('invisible_evaluations')
     .select('*')
     .eq('code', code)
-    .eq('evaluator', evaluatorId)
+    .eq('evaluator', actualEvaluatorId)
     .maybeSingle();
   
   if (error) {
