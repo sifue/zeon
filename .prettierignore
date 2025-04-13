@@ -1,0 +1,22 @@
+# ビルド出力
+.next/
+out/
+build/
+dist/
+
+# 依存関係
+node_modules/
+
+# ログ
+*.log
+
+# 環境変数
+.env*
+!.env.example
+
+# その他
+.git/
+.gitignore
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

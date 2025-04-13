@@ -1,5 +1,5 @@
-import { createServerClient } from "@supabase/ssr";
-import { type NextRequest, NextResponse } from "next/server";
+import { createServerClient } from '@supabase/ssr';
+import { type NextRequest, NextResponse } from 'next/server';
 
 export const updateSession = async (request: NextRequest) => {
   try {
@@ -19,18 +19,16 @@ export const updateSession = async (request: NextRequest) => {
             return request.cookies.getAll();
           },
           setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value }) =>
-              request.cookies.set(name, value),
-            );
+            cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
             response = NextResponse.next({
               request,
             });
             cookiesToSet.forEach(({ name, value, options }) =>
-              response.cookies.set(name, value, options),
+              response.cookies.set(name, value, options)
             );
           },
         },
-      },
+      }
     );
 
     // This will refresh session if expired - required for Server Components
@@ -54,15 +52,18 @@ export const updateSession = async (request: NextRequest) => {
         // BANされたユーザーの場合、自動的にログアウトしてトップページにリダイレクト
         if (bannedUser) {
           console.log('User is banned, signing out');
-          
+
           // ログアウト処理
           const { error: signOutError } = await supabase.auth.signOut();
           console.log('Sign out error:', signOutError);
-          
+
           // トップページにリダイレクト（エラーメッセージ付き）
           const redirectUrl = new URL('/', request.url);
-          redirectUrl.searchParams.set('error', 'アカウントがBANされています。ZEN大学のzen.ac.jpドメインのGoogleアカウントのみが利用できます。');
-          
+          redirectUrl.searchParams.set(
+            'error',
+            'アカウントがBANされています。ZEN大学のzen.ac.jpドメインのGoogleアカウントのみが利用できます。'
+          );
+
           return NextResponse.redirect(redirectUrl);
         }
       } catch (err) {
@@ -71,12 +72,12 @@ export const updateSession = async (request: NextRequest) => {
     }
 
     // protected routes
-    if (request.nextUrl.pathname.startsWith("/protected") && user.error) {
-      return NextResponse.redirect(new URL("/sign-in", request.url));
+    if (request.nextUrl.pathname.startsWith('/protected') && user.error) {
+      return NextResponse.redirect(new URL('/sign-in', request.url));
     }
 
-    if (request.nextUrl.pathname === "/" && !user.error) {
-      return NextResponse.redirect(new URL("/protected", request.url));
+    if (request.nextUrl.pathname === '/' && !user.error) {
+      return NextResponse.redirect(new URL('/protected', request.url));
     }
 
     return response;

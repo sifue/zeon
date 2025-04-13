@@ -1,26 +1,26 @@
-import { FormMessage, Message } from "@/components/form-message";
-import Link from "next/link";
-import { GoogleAuthButton } from "@/components/google-auth-button";
-import { checkBannedUser } from "@/app/check-banned";
-import { redirect } from "next/navigation";
+import { FormMessage, Message } from '@/components/form-message';
+import Link from 'next/link';
+import { GoogleAuthButton } from '@/components/google-auth-button';
+import { checkBannedUser } from '@/app/check-banned';
+import { redirect } from 'next/navigation';
 
 export default async function Login(props: { searchParams: Promise<Message> }) {
   const searchParams = await props.searchParams;
-  
+
   // BANされたユーザーをチェック
   const bannedCheck = await checkBannedUser();
-  
+
   // BANされたユーザーの場合、トップページにリダイレクト
   if (bannedCheck && bannedCheck.banned) {
-    const errorMessage = bannedCheck.message || "アカウントがBANされています";
+    const errorMessage = bannedCheck.message || 'アカウントがBANされています';
     redirect(`/?error=${encodeURIComponent(errorMessage)}`);
   }
-  
+
   return (
     <form className="flex-1 flex flex-col min-w-64">
       <h1 className="text-2xl font-medium">Sign in</h1>
       <p className="text-sm text-foreground">
-        Don't have an account?{" "}
+        Don't have an account?{' '}
         <Link className="text-foreground font-medium underline" href="/sign-up">
           Sign up
         </Link>

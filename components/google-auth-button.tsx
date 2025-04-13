@@ -1,14 +1,14 @@
 'use client';
 
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
-import { useState } from "react";
+import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/utils/supabase/client';
+import { useState } from 'react';
 
 export function GoogleAuthButton() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true);
@@ -19,7 +19,7 @@ export function GoogleAuthButton() {
           redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
-      
+
       if (error) {
         throw error;
       }
