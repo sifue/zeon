@@ -12,6 +12,7 @@ import {
 import { SubjectDetail } from '@/components/subject-detail';
 import { EvaluationList } from '@/components/evaluation-list';
 import { EvaluationForm } from '@/components/evaluation-form';
+import { SubjectReportsList } from '@/components/subject-reports-list';
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import { checkBannedUser } from '@/app/check-banned';
@@ -96,6 +97,14 @@ export default async function SubjectPage({ params }: SubjectPageParams) {
             deleteAction={userEvaluation ? deleteEvaluationAction : undefined}
           />
         </div>
+        
+        {/* 管理者向け通報一覧セクション */}
+        {isAdmin && (
+          <SubjectReportsList 
+            subjectCode={code}
+            isAdmin={isAdmin}
+          />
+        )}
         
         {/* レビュー一覧セクション */}
         <div className="mt-6">

@@ -721,3 +721,64 @@ export async function toggleEvaluationVisibilityAction(formData: FormData) {
     };
   }
 }
+
+// 科目コードに基づいて通報一覧を取得する
+export const getReportsBySubjectCode = async (code: string) => {
+  const supabase = await createClient();
+  
+  // 管理者かどうかをチェック
+  const isAdmin = await checkIsAdmin();
+  
+  if (!isAdmin) {
+    return [];
+  }
+  
+  // 科目の評価IDを取得
+  const { data: evaluations } = await supabase
+    .from('evaluations')
+    .select('id, evaluator')
+    .eq('code', code);
+  
+  if (!evaluations || evaluations.length === 0) {
+    return [];
+  }
+  
+  const evaluationIds = evaluations.map(e => e.id);
+  
+  // 通報一覧を取得
+  const { data: reports, error } = await supabase
+    .from('reports')
+    .select(`
+      id,
+      evaluation_id,
+      reporter,
+      is_irrelevant,
+      is_inappropriate,
+      is_fake,
+      is_other,
+      comment,
+      created_at,
+      evaluations:evaluation_id(id, evaluator)
+    `)
+    .in('evaluation_id', evaluationIds)
+    .order('created_at', { ascending: false });
+  
+  if (error || !reports) {
+    return [];
+  }
+  
+  // 通報にダミーのユーザー情報を追加
+  const reportsWithUsers = reports.map(report => {
+    // evaluationsは外部キー参照で取得したオブジェクト
+    const evaluation = report.evaluations as unknown as { id: number; evaluator: string };
+    
+    return {
+      ...report,
+      reporter_name: `通報者${report.reporter.substring(0, 4)}`,
+      evaluator_name: evaluation ? `ユーザー${evaluation.evaluator.substring(0, 4)}` : '不明',
+      evaluations: evaluation || { id: 0, evaluator: '' }
+    };
+  });
+  
+  return reportsWithUsers;
+};

@@ -5,8 +5,9 @@ import { StarRating } from '@/components/star-rating';
 import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { toggleUsefulAction, toggleEvaluationVisibilityAction, checkEvaluationInvisible } from '@/app/actions';
-import { ThumbsUp, Flag, EyeOff, Eye } from 'lucide-react';
+import { ThumbsUp, Flag, EyeOff, Eye, ChevronDown, ChevronUp } from 'lucide-react';
 import { ReportForm } from '@/components/report-form';
+import { ReportList } from '@/components/report-list';
 
 // 評価の型定義
 type Evaluation = {
@@ -28,6 +29,7 @@ type Evaluation = {
   useful_count: number;
   is_useful?: boolean; // ユーザーが「役に立った」を押したかどうか
   is_invisible?: boolean; // 評価が非表示かどうか
+  show_reports?: boolean; // 通報一覧の表示/非表示
 };
 
 // コンポーネントのプロパティ
@@ -106,6 +108,9 @@ const saveUserUseful = (evaluationId: number, isUseful: boolean) => {
 
 // レビュー一覧表示コンポーネント
 export function EvaluationList({ evaluations: initialEvaluations, isAdmin = false }: EvaluationListProps) {
+  // 管理者かどうかをコンソールログに出力
+  console.log('isAdmin:', isAdmin);
+  
   // 評価一覧の状態
   const [evaluations, setEvaluations] = useState<Evaluation[]>(initialEvaluations);
   
@@ -141,7 +146,11 @@ export function EvaluationList({ evaluations: initialEvaluations, isAdmin = fals
         const updatedEvaluations = await Promise.all(
           initialEvaluations.map(async (evaluation) => {
             const isUseful = await checkUserUseful(evaluation.id);
-            return { ...evaluation, is_useful: isUseful };
+            return { 
+              ...evaluation, 
+              is_useful: isUseful,
+              show_reports: false // 初期状態では通報一覧を非表示に
+            };
           })
         );
         setEvaluations(updatedEvaluations);
@@ -237,6 +246,32 @@ export function EvaluationList({ evaluations: initialEvaluations, isAdmin = fals
     );
   }
 
+  // 通報一覧の表示/非表示を切り替えるハンドラ
+  const handleToggleReports = (index: number) => {
+    console.log(`通報一覧の表示/非表示を切り替え: index=${index}, evaluationId=${evaluations[index].id}`);
+    
+    // 現在の状態をコンソールに出力
+    console.log('現在の評価一覧:', evaluations);
+    console.log(`現在の状態: show_reports=${evaluations[index].show_reports}`);
+    
+    // 新しい配列を作成して状態を更新
+    const newEvaluations = evaluations.map((evaluation, i) => {
+      if (i === index) {
+        return {
+          ...evaluation,
+          show_reports: !evaluation.show_reports
+        };
+      }
+      return evaluation;
+    });
+    
+    console.log(`新しい状態: show_reports=${newEvaluations[index].show_reports}`);
+    console.log('新しい評価一覧:', newEvaluations);
+    
+    // 状態を更新
+    setEvaluations(newEvaluations);
+  };
+
   return (
     <div className="space-y-6">
       {evaluations.map((evaluation, index) => (
@@ -276,22 +311,37 @@ export function EvaluationList({ evaluations: initialEvaluations, isAdmin = fals
                 <Flag size={16} />
               </button>
               {isAdmin && (
-                <button
-                  className={`flex items-center gap-1 px-2 py-1 rounded-md ml-2 ${
-                    evaluation.is_invisible 
-                      ? 'text-green-500 hover:text-green-600 hover:bg-gray-100' 
-                      : 'text-gray-500 hover:text-red-500 hover:bg-gray-100'
-                  }`}
-                  onClick={() => handleVisibilityToggle(evaluation, index)}
-                  aria-label={evaluation.is_invisible ? '表示に戻す' : '非表示にする'}
-                  title={evaluation.is_invisible ? '表示に戻す' : '非表示にする'}
-                >
-                  {evaluation.is_invisible ? <Eye size={16} /> : <EyeOff size={16} />}
-                </button>
+                <>
+                  <button
+                    className={`flex items-center gap-1 px-2 py-1 rounded-md ml-2 ${
+                      evaluation.is_invisible 
+                        ? 'text-green-500 hover:text-green-600 hover:bg-gray-100' 
+                        : 'text-gray-500 hover:text-red-500 hover:bg-gray-100'
+                    }`}
+                    onClick={() => handleVisibilityToggle(evaluation, index)}
+                    aria-label={evaluation.is_invisible ? '表示に戻す' : '非表示にする'}
+                    title={evaluation.is_invisible ? '表示に戻す' : '非表示にする'}
+                  >
+                    {evaluation.is_invisible ? <Eye size={16} /> : <EyeOff size={16} />}
+                  </button>
+                  <button
+                    className="text-gray-500 hover:text-blue-500 hover:bg-gray-100 px-2 py-1 rounded-md ml-2 flex items-center"
+                    onClick={() => handleToggleReports(index)}
+                    aria-label={evaluation.show_reports ? '通報一覧を閉じる' : '通報一覧を表示'}
+                    title={evaluation.show_reports ? '通報一覧を閉じる' : '通報一覧を表示'}
+                  >
+                    {evaluation.show_reports ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  </button>
+                </>
               )}
             </div>
           </div>
           <div className="whitespace-pre-line text-gray-700">{evaluation.review}</div>
+          
+          {/* 管理者向け通報一覧 */}
+          {isAdmin && evaluation.show_reports && (
+            <ReportList evaluationId={evaluation.id} />
+          )}
         </div>
       ))}
       
