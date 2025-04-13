@@ -73,4 +73,4 @@ Google Auth でログインできることを確認してください。
  `sql` フォルダにある SQL スクリプトを順番に実行してください。
 また科目のデータはSupabaseのシラバスAPIから取得しているため、`sql/03_initial_data_generator.js` を実行することで自動生成されます。
 詳しくは `sql/README.md` を参照してください。
-- [sql/README.md](sql/README.md)
+- [sql/README.md](../sql/README.md)

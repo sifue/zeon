@@ -369,12 +369,12 @@ Supabaseのデータベーストリガー機能を使用して、ユーザーサ
 ### 管理者の追加
 
 ```sql
-INSERT INTO public.admin (uid) VALUES ('<uid>') ON CONFLICT DO NOTHING;
+INSERT INTO public.admins (uid) VALUES ('<uid>') ON CONFLICT DO NOTHING;
 ```
 ### 管理者の削除
 
 ```sql
-DELETE FROM public.admin WHERE uid = '<uid>';
+DELETE FROM public.admins WHERE uid = '<uid>';
 ```
 
 ### BANされたユーザーの追加
