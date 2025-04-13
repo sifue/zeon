@@ -17,17 +17,30 @@ const ZeonLogo: React.FC = () => {
           <stop offset="0%" stopColor="#3a7bd5" />
           <stop offset="100%" stopColor="#7856d6" />
         </linearGradient>
+        <filter id="shadow" x="-2" y="-2" width="204" height="84">
+          <feDropShadow dx="0" dy="2" stdDeviation="2" floodOpacity="0.3" />
+        </filter>
       </defs>
-      <g fill="url(#zeonGradient)">
-        {/* Z */}
-        <path d="M0 20 H50 L0 60 H50 V70 H0 V60 L50 20 H0 Z" />
-        {/* E */}
-        <path d="M60 20 H100 V30 H70 V40 H95 V50 H70 V60 H100 V70 H60 V20 Z" />
-        {/* O with slash */}
-        <path d="M110 45 A20 20 0 1 1 149.9 45 A20 20 0 1 1 110 45 Z M113 30 L147 65 L143 68 L110 33 Z" />
-        {/* N */}
-        <path d="M160 20 H170 L190 55 V20 H200 V70 H190 L170 35 V70 H160 V20 Z" />
-      </g>
+      
+      {/* 背景の装飾 */}
+      <rect x="5" y="5" width="190" height="70" rx="10" fill="white" fillOpacity="0.1" />
+      
+      {/* ZEON テキスト - システムフォントを使用 */}
+      <text
+        x="100"
+        y="55"
+        fontFamily="Arial, Helvetica, sans-serif"
+        fontSize="48"
+        fontWeight="bold"
+        textAnchor="middle"
+        fill="url(#zeonGradient)"
+        filter="url(#shadow)"
+      >
+        ZEON
+      </text>
+      
+      {/* 下線装飾 */}
+      <path d="M30 65 H170" stroke="url(#zeonGradient)" strokeWidth="3" strokeLinecap="round" />
     </svg>
   );
 };
