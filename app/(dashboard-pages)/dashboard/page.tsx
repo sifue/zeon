@@ -1,6 +1,7 @@
-import { getSubjects, getSubjectEvaluations, checkIsAdmin, getRecentEvaluations } from '@/app/actions';
+import { getSubjects, getSubjectEvaluations, checkIsAdmin, getRecentEvaluations, getRecentReports } from '@/app/actions';
 import { SubjectList } from '@/components/subject-list';
 import { RecentEvaluations } from '@/components/recent-evaluations';
+import { RecentReports } from '@/components/recent-reports';
 import { createClient } from '@/utils/supabase/server';
 import { InfoIcon } from 'lucide-react';
 import { redirect } from 'next/navigation';
@@ -37,6 +38,9 @@ export default async function DashboardPage() {
   
   // 最近の評価を取得
   const recentEvaluations = await getRecentEvaluations(10);
+  
+  // 管理者の場合は最近の通報も取得
+  const recentReports = isAdmin ? await getRecentReports(5) : [];
 
   return (
     <div className="flex-1 w-full flex flex-col gap-8 p-4 md:p-8">
@@ -50,6 +54,15 @@ export default async function DashboardPage() {
           </div>
         )}
       </div>
+      
+      {isAdmin && recentReports.length > 0 && (
+        <div className="flex flex-col gap-6">
+          <h2 className="text-2xl font-semibold">最近の通報 (最新5件)</h2>
+          <div className="overflow-hidden rounded-lg border p-4 bg-red-50">
+            <RecentReports reports={recentReports} />
+          </div>
+        </div>
+      )}
       
       <div className="flex flex-col gap-6">
         <h2 className="text-2xl font-semibold">最近の評価 (最新10件)</h2>

@@ -950,3 +950,118 @@ export const getReportsBySubjectCode = async (code: string) => {
   
   return reportsWithUsers;
 };
+
+// 最近の通報を取得する（ダッシュボード用）
+export const getRecentReports = async (limit = 5) => {
+  const supabase = await createClient();
+  
+  // 管理者かどうかをチェック
+  const isAdmin = await checkIsAdmin();
+  
+  if (!isAdmin) {
+    return [];
+  }
+  
+  // 最近の通報を取得
+  const { data: reports, error } = await supabase
+    .from('reports')
+    .select(`
+      id,
+      evaluation_id,
+      reporter,
+      is_irrelevant,
+      is_inappropriate,
+      is_fake,
+      is_other,
+      comment,
+      created_at,
+      evaluations:evaluation_id(id, evaluator, code, evaluation, review, year, quarter, created_at)
+    `)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  
+  if (error || !reports) {
+    return [];
+  }
+  
+  // 評価IDの一覧を取得
+  const evaluationIds = reports.map(report => report.evaluation_id);
+  
+  // 役に立った数を取得
+  const { data: usefuls } = await supabase
+    .from('usefuls')
+    .select('evaluation_id')
+    .in('evaluation_id', evaluationIds);
+  
+  // 役に立った数をマッピング
+  const usefulCounts: Record<number, number> = {};
+  if (usefuls) {
+    usefuls.forEach((item: { evaluation_id: number }) => {
+      if (!usefulCounts[item.evaluation_id]) {
+        usefulCounts[item.evaluation_id] = 0;
+      }
+      usefulCounts[item.evaluation_id]++;
+    });
+  }
+  
+  // 科目コードの一覧を取得
+  const subjectCodes = new Set<string>();
+  reports.forEach(report => {
+    const evaluation = report.evaluations as unknown as { code: string };
+    if (evaluation && evaluation.code) {
+      subjectCodes.add(evaluation.code);
+    }
+  });
+  
+  // 科目情報を取得
+  const { data: subjects } = await supabase
+    .from('subjects')
+    .select('code, name, faculties')
+    .in('code', Array.from(subjectCodes));
+  
+  // 科目情報をマッピング
+  const subjectMap: Record<string, { name: string; faculties: any }> = {};
+  if (subjects) {
+    subjects.forEach(subject => {
+      subjectMap[subject.code] = {
+        name: subject.name,
+        faculties: subject.faculties
+      };
+    });
+  }
+  
+  // 通報に詳細情報を追加
+  const reportsWithDetails = reports.map(report => {
+    // evaluationsは外部キー参照で取得したオブジェクト
+    const evaluation = report.evaluations as unknown as { 
+      id: number; 
+      evaluator: string; 
+      code: string;
+      evaluation: number;
+      review: string;
+      year: number;
+      quarter: string;
+      created_at: string;
+    };
+    
+    const subject = evaluation && evaluation.code ? subjectMap[evaluation.code] : { name: '不明', faculties: [] };
+    
+    return {
+      ...report,
+      reporter_name: `通報者${report.reporter.substring(0, 4)}`,
+      reporter_id: report.reporter,
+      evaluator_name: evaluation ? `ユーザー${evaluation.evaluator.substring(0, 4)}` : '不明',
+      evaluator_id: evaluation ? evaluation.evaluator : '',
+      subject_name: subject ? subject.name : '不明',
+      faculties: subject ? subject.faculties : [],
+      evaluation: evaluation ? evaluation.evaluation : 0,
+      review: evaluation ? evaluation.review : '',
+      year: evaluation ? evaluation.year : 0,
+      quarter: evaluation ? evaluation.quarter : '',
+      evaluation_created_at: evaluation ? evaluation.created_at : '',
+      useful_count: usefulCounts[report.evaluation_id] || 0
+    };
+  });
+  
+  return reportsWithDetails;
+};
