@@ -70,11 +70,11 @@ export default async function SubjectPage({ params }: SubjectPageParams) {
   const isAdmin = await checkIsAdmin();
 
   return (
-    <div className="flex-1 w-full flex flex-col gap-6 p-4 md:p-8">
+    <div className="flex-1 w-full flex flex-col gap-4 pt-2 pb-4 px-4 md:pt-3 md:pb-8 md:px-8">
       {/* 戻るリンク */}
       <Link 
         href="/dashboard" 
-        className="flex items-center text-blue-600 hover:text-blue-800 mb-2"
+        className="flex items-center text-blue-600 hover:text-blue-800"
       >
         <ArrowLeft size={16} className="mr-1" />
         ダッシュボードに戻る
