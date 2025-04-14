@@ -22,7 +22,7 @@ export function GoogleOneTap() {
         if (error) {
           console.error('Google One Tap認証エラー:', error);
         } else if (data?.user) {
-          window.location.href = '/protected';
+          window.location.href = '/dashboard'; // 認証成功後のリダイレクト先
         }
       } catch (error) {
         console.error('Google One Tap処理エラー:', error);
