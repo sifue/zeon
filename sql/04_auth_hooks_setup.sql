@@ -9,8 +9,8 @@
 CREATE OR REPLACE FUNCTION auth.on_auth_user_created()
 RETURNS trigger AS $$
 BEGIN
-  -- ユーザーのメールアドレスがzen.ac.jpドメインでない場合
-  IF NEW.email IS NOT NULL AND NEW.email NOT LIKE '%@zen.ac.jp' THEN
+  -- ユーザーのメールアドレスがzen.ac.jpまたはstudent.zen.ac.jpドメインでない場合
+  IF NEW.email IS NOT NULL AND NEW.email NOT LIKE '%@zen.ac.jp' AND NEW.email NOT LIKE '%@student.zen.ac.jp' THEN
     -- BANリストに追加
     INSERT INTO public.banned_users (uid)
     VALUES (NEW.id)
@@ -19,8 +19,8 @@ BEGIN
     -- ログ出力（デバッグ用）
     RAISE LOG 'User % with email % has been banned because it is not a zen.ac.jp domain', NEW.id, NEW.email;
   ELSE
-    -- zen.ac.jpドメインの場合は何もしない
-    RAISE LOG 'User % with email % is allowed (zen.ac.jp domain)', NEW.id, NEW.email;
+    -- zen.ac.jpまたはstudent.zen.ac.jpドメインの場合は何もしない
+    RAISE LOG 'User % with email % is allowed (zen.ac.jp or student.zen.ac.jp domain)', NEW.id, NEW.email;
   END IF;
   
   RETURN NEW;
@@ -38,12 +38,12 @@ DO $$
 DECLARE
   user_record RECORD;
 BEGIN
-  -- banned_usersテーブルに登録されていないzen.ac.jp以外のドメインのユーザーを検索
+  -- banned_usersテーブルに登録されていないzen.ac.jpまたはstudent.zen.ac.jp以外のドメインのユーザーを検索
   FOR user_record IN 
     SELECT u.id, u.email 
     FROM auth.users u
     LEFT JOIN public.banned_users b ON u.id = b.uid
-    WHERE u.email NOT LIKE '%@zen.ac.jp' AND b.uid IS NULL
+    WHERE u.email NOT LIKE '%@zen.ac.jp' AND u.email NOT LIKE '%@student.zen.ac.jp' AND b.uid IS NULL
   LOOP
     -- BANリストに追加
     INSERT INTO public.banned_users (uid)

@@ -36,7 +36,7 @@ export const checkBannedUser = async () => {
       return {
         banned: true,
         message:
-          'アカウントがBANされています。ZEN大学のzen.ac.jpドメインのGoogleアカウントのみが利用できます。',
+          'アカウントがBANされています。ZEN大学のzen.ac.jpまたはstudent.zen.ac.jpドメインのGoogleアカウントのみが利用できます。',
       };
     }
 
