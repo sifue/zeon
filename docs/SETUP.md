@@ -48,8 +48,8 @@ npm install
   - Enable にして `Save` をクリックして保存する。
   - Callback URL (for OAuth) を控えておき、Google側に設定した値と同じか確認する。
 
-## .local.env の作成
-- プロジェクトのルートに `.local.env` という名前のファイルを作成し、以下の内容を記述する。
+## .env.local の作成
+- プロジェクトのルートに `.env.local` という名前のファイルを作成し、以下の内容を記述する。
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=[SupabaseプロジェクトのURL]
