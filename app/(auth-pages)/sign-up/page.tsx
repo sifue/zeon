@@ -39,7 +39,7 @@ export default async function Signup(props: { searchParams: Promise<Message> }) 
           <FormMessage message={searchParams} />
           <div className="mt-4 text-sm text-gray-500 bg-gray-100 p-3 rounded-md">
             <p className="font-medium text-amber-600">注意:</p>
-            <p>ZEN大学のzen.ac.jpドメインのGoogleアカウントのみが利用できます。</p>
+            <p>ZEN大学のzen.ac.jpまたはstudent.zen.ac.jpドメインのGoogleアカウントのみが利用できます。</p>
             <p>その他のドメインのアカウントではサインインできません。</p>
           </div>
           <div className="mt-4 text-xs text-gray-500">
