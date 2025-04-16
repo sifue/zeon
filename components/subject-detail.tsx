@@ -130,11 +130,24 @@ export function SubjectDetail({ subject, stats }: SubjectDetailProps) {
 
         {/* 特記事項 */}
         {subject.special_notes && (
-          <div>
+          <div className="border-b pb-4">
             <h2 className="text-lg font-semibold mb-2">特記事項</h2>
             <p className="text-gray-700 whitespace-pre-line">{subject.special_notes}</p>
           </div>
         )}
+
+        {/* 公式シラバスへのリンク */}
+        <div>
+          <h2 className="text-lg font-semibold mb-2">公式シラバス</h2>
+          <a 
+            href={`https://syllabus.zen.ac.jp/subjects/${subject.opening_year}/${subject.code}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:text-blue-800 underline"
+          >
+            公式シラバスを開く
+          </a>
+        </div>
       </div>
     </div>
   );
