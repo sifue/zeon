@@ -88,6 +88,8 @@ export function EvaluationForm({
   // フォームの状態
   const [evaluation, setEvaluation] = useState<number>(existingEvaluation?.evaluation || 0);
   const [review, setReview] = useState<string>(existingEvaluation?.review || '');
+  const [isReviewTooLong, setIsReviewTooLong] = useState<boolean>(false);
+  const MAX_REVIEW_LENGTH = 10000; // 最大文字数を10000文字に設定
   const [year, setYear] = useState<number>(existingEvaluation?.year || getCurrentYear());
   const [quarter, setQuarter] = useState<string>(existingEvaluation?.quarter || 'Q1');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -122,11 +124,18 @@ export function EvaluationForm({
     );
   };
 
+  // レビューの変更ハンドラ
+  const handleReviewChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newReview = e.target.value;
+    setReview(newReview);
+    setIsReviewTooLong(newReview.length > MAX_REVIEW_LENGTH);
+  };
+
   // フォーム送信ハンドラ
   const handleSubmit = async (formData: FormData) => {
     // クライアント側のバリデーション
     const evalValue = parseInt(formData.get('evaluation') as string);
-    const reviewValue = formData.get('review') as string;
+    let reviewValue = formData.get('review') as string;
     
     if (evalValue === 0 || isNaN(evalValue)) {
       setError('評価を選択してください');
@@ -136,6 +145,13 @@ export function EvaluationForm({
     if (!reviewValue.trim()) {
       setError('レビューを入力してください');
       return;
+    }
+
+    // 文字数が上限を超えている場合は切り詰める
+    if (reviewValue.length > MAX_REVIEW_LENGTH) {
+      reviewValue = reviewValue.substring(0, MAX_REVIEW_LENGTH);
+      // FormDataオブジェクトの値を更新
+      formData.set('review', reviewValue);
     }
 
     setIsSubmitting(true);
@@ -306,11 +322,25 @@ export function EvaluationForm({
             id="review"
             name="review"
             value={review}
-            onChange={(e) => setReview(e.target.value)}
+            onChange={handleReviewChange}
             rows={5}
             placeholder="この科目についてのレビューを書いてください..."
-            className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            className={`w-full rounded-md border-gray-300 shadow-sm ${
+              isReviewTooLong
+                ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                : 'focus:border-blue-500 focus:ring-blue-500'
+            }`}
           />
+          <div className="flex justify-between text-sm mt-1">
+            <span className={isReviewTooLong ? "text-red-500" : "text-gray-500"}>
+              {review.length} / {MAX_REVIEW_LENGTH}文字
+            </span>
+            {isReviewTooLong && (
+              <span className="text-red-500">
+                1万文字を超えています。投稿時に1万文字までに切り詰められます。
+              </span>
+            )}
+          </div>
         </div>
         
         {/* エラーメッセージ */}

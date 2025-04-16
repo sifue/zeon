@@ -31,6 +31,8 @@ export function ReportForm({ evaluationId, onClose, onSubmit }: ReportFormProps)
   const [isFake, setIsFake] = useState<boolean>(false);
   const [isOther, setIsOther] = useState<boolean>(false);
   const [comment, setComment] = useState<string>('');
+  const [isCommentTooLong, setIsCommentTooLong] = useState<boolean>(false);
+  const MAX_COMMENT_LENGTH = 10000; // 最大文字数を10000文字に設定
   const [existingReport, setExistingReport] = useState<Report | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
@@ -60,6 +62,13 @@ export function ReportForm({ evaluationId, onClose, onSubmit }: ReportFormProps)
     fetchExistingReport();
   }, [evaluationId]);
 
+  // コメントの変更ハンドラ
+  const handleCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newComment = e.target.value;
+    setComment(newComment);
+    setIsCommentTooLong(newComment.length > MAX_COMMENT_LENGTH);
+  };
+
   // フォーム送信ハンドラ
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +78,11 @@ export function ReportForm({ evaluationId, onClose, onSubmit }: ReportFormProps)
       setError('通報理由を選択してください');
       return;
     }
+
+    // 文字数が上限を超えている場合は切り詰める
+    const trimmedComment = comment.length > MAX_COMMENT_LENGTH 
+      ? comment.substring(0, MAX_COMMENT_LENGTH) 
+      : comment;
 
     setIsSubmitting(true);
     setError('');
@@ -84,7 +98,7 @@ export function ReportForm({ evaluationId, onClose, onSubmit }: ReportFormProps)
       formData.append('is_inappropriate', isInappropriate.toString());
       formData.append('is_fake', isFake.toString());
       formData.append('is_other', isOther.toString());
-      formData.append('comment', comment);
+      formData.append('comment', trimmedComment);
       
       // サーバーアクションを実行
       const result = await submitReportAction(formData);
@@ -244,16 +258,28 @@ export function ReportForm({ evaluationId, onClose, onSubmit }: ReportFormProps)
               <textarea
                 id="comment"
                 value={comment}
-                onChange={(e) => setComment(e.target.value)}
+                onChange={handleCommentChange}
                 rows={3}
                 placeholder="通報の詳細を入力してください..."
                 disabled={!!existingReport}
                 className={`w-full rounded-md border-gray-300 shadow-sm ${
                   existingReport 
                     ? 'bg-gray-100 text-gray-700' 
-                    : 'focus:border-blue-500 focus:ring-blue-500'
+                    : isCommentTooLong
+                      ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                      : 'focus:border-blue-500 focus:ring-blue-500'
                 }`}
               />
+              <div className="flex justify-between text-sm mt-1">
+                <span className={isCommentTooLong ? "text-red-500" : "text-gray-500"}>
+                  {comment.length} / {MAX_COMMENT_LENGTH}文字
+                </span>
+                {isCommentTooLong && (
+                  <span className="text-red-500">
+                    1万文字を超えています。投稿時に1万文字までに切り詰められます。
+                  </span>
+                )}
+              </div>
             </div>
             
             {/* エラーメッセージ */}
