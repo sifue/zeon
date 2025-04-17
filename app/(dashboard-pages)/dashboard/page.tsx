@@ -26,9 +26,23 @@ export default async function DashboardPage() {
     const errorMessage = bannedCheck.message || 'アカウントがBANされています';
     redirect(`/?error=${encodeURIComponent(errorMessage)}`);
   }
-
-  // 科目一覧を取得
-  const subjects = await getSubjects();
+  
+  // 全ての年次の科目データを取得（パフォーマンス最適化のため、初期表示時は全て取得）
+  // これにより、タブ切り替え時に追加のデータ取得が不要になります
+  const [grade1Subjects, grade2Subjects, grade3Subjects, grade4Subjects] = await Promise.all([
+    getSubjects(1),
+    getSubjects(2),
+    getSubjects(3),
+    getSubjects(4)
+  ]);
+  
+  // 科目データをまとめる
+  const allSubjects = {
+    grade1: grade1Subjects,
+    grade2: grade2Subjects,
+    grade3: grade3Subjects,
+    grade4: grade4Subjects
+  };
   
   // 評価データを取得
   const evaluationStats = await getSubjectEvaluations();
@@ -74,7 +88,10 @@ export default async function DashboardPage() {
       <div className="flex flex-col gap-6">
         <h2 className="text-2xl font-semibold">科目一覧</h2>
         <div className="overflow-hidden rounded-lg border">
-          <SubjectList subjects={subjects} evaluationStats={evaluationStats} />
+          <SubjectList 
+            allSubjects={allSubjects}
+            evaluationStats={evaluationStats} 
+          />
         </div>
       </div>
     </div>

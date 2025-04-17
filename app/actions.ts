@@ -13,15 +13,22 @@ export const signOutAction = async () => {
 };
 
 // 科目一覧を取得する
-export const getSubjects = async () => {
+export const getSubjects = async (enrollmentGrade?: number) => {
   const supabase = await createClient();
   
-  // 科目を想定年次順 > 科目コード順に並び替えて取得
-  const { data: subjects, error } = await supabase
+  // クエリを作成
+  let query = supabase
     .from('subjects')
-    .select('*')
+    .select('code, name, faculties, enrollment_grade')
     .order('enrollment_grade', { ascending: true })
     .order('code', { ascending: true });
+  
+  // 特定の年次の科目のみを取得する場合
+  if (enrollmentGrade !== undefined) {
+    query = query.eq('enrollment_grade', enrollmentGrade);
+  }
+  
+  const { data: subjects, error } = await query;
   
   if (error) {
     return [];
@@ -29,6 +36,7 @@ export const getSubjects = async () => {
   
   return subjects;
 };
+
 
 // 科目の評価データを取得する
 export const getSubjectEvaluations = async () => {
@@ -72,7 +80,6 @@ export const getSubjectEvaluations = async () => {
     );
   }
   
-  // 非表示評価のセットとフィルタリング前後の評価数
   
   // 科目ごとに評価数と平均評価を計算
   const evaluationStats: Record<string, { count: number; average: number }> = {};
@@ -167,7 +174,6 @@ export const getEvaluationsBySubjectCode = async (code: string) => {
     );
   }
   
-  // 非表示評価のセットとフィルタリング前後の評価数
   
   // 評価にダミーのユーザー情報と非表示状態を追加
   const evaluationsWithUsers = filteredEvaluations.map(evaluation => {
@@ -252,7 +258,6 @@ export const getEvaluationStatsByCode = async (code: string) => {
     );
   }
   
-  // 非表示評価のセットとフィルタリング前後の評価数
   
   if (filteredData.length === 0) {
     return { count: 0, average: 0 };
@@ -870,7 +875,6 @@ export const getRecentEvaluations = async (limit = 5) => {
     );
   }
   
-  // 非表示評価のセットとフィルタリング前後の評価数
   
   // 評価にダミーのユーザー情報と非表示状態を追加
   const evaluationsWithUsers = filteredEvaluations.map(evaluation => {
