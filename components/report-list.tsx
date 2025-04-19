@@ -17,6 +17,7 @@ type Report = {
   is_other: boolean;
   comment: string;
   created_at: string;
+  isCommentExpanded?: boolean; // コメントが展開されているかどうか
 };
 
 // コンポーネントのプロパティ
@@ -55,6 +56,13 @@ export function ReportList({ evaluationId }: ReportListProps) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   
+  // コメントの展開/折りたたみを切り替えるハンドラ
+  const toggleCommentExpand = (index: number) => {
+    const newReports = [...reports];
+    newReports[index].isCommentExpanded = !newReports[index].isCommentExpanded;
+    setReports(newReports);
+  };
+  
   // コンポーネントがマウントされたときに通報を取得
   useEffect(() => {
     console.log(`ReportList useEffect が実行されました: evaluationId=${evaluationId}`);
@@ -72,7 +80,8 @@ export function ReportList({ evaluationId }: ReportListProps) {
         if (reportData) {
           setReports([{
             ...reportData,
-            reporter_name: `通報者${reportData.reporter.substring(0, 4)}`
+            reporter_name: `通報者${reportData.reporter.substring(0, 4)}`,
+            isCommentExpanded: false
           }]);
         } else {
           setReports([]);
@@ -122,7 +131,7 @@ export function ReportList({ evaluationId }: ReportListProps) {
     <div className="mt-4 p-4 bg-gray-50 rounded-md border border-gray-200">
       <h4 className="text-sm font-semibold text-gray-700 mb-2">通報一覧</h4>
       <div className="space-y-3">
-        {reports.map((report) => (
+        {reports.map((report, index) => (
           <div key={report.id} className="bg-gray-50 p-3 rounded-md border border-gray-200">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 mb-2">
               <div className="text-sm font-medium">
@@ -136,9 +145,19 @@ export function ReportList({ evaluationId }: ReportListProps) {
               <span className="font-medium">理由:</span> {formatReportReasons(report)}
             </div>
             {report.comment && (
-              <div className="text-sm">
-                <span className="font-medium">コメント:</span> {report.comment}
-              </div>
+              <>
+                <div className={`text-sm ${report.isCommentExpanded ? '' : 'line-clamp-3'}`}>
+                  <span className="font-medium">コメント:</span> {report.comment}
+                </div>
+                {report.comment.split('\n').length > 3 || report.comment.length > 150 ? (
+                  <button
+                    onClick={() => toggleCommentExpand(index)}
+                    className="text-blue-600 hover:text-blue-800 hover:underline text-sm mt-1 focus:outline-none"
+                  >
+                    {report.isCommentExpanded ? '閉じる' : '続きを読む'}
+                  </button>
+                ) : null}
+              </>
             )}
           </div>
         ))}
