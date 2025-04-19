@@ -1,9 +1,9 @@
 ![ZEON logo](image/zeon-log.png)
 
-<h1 align="center">ZEN大授業評価サイト ZEON (非公式)</h1>
+<h1 align="center">ZEN大授業評価レビューサイト ZEON (非公式)</h1>
 
 <p align="center">
- ZEN大学のドメインのGoogleアカウントユーザーのみが利用できるクローズドなZEN大学の授業評価サイト<br>
+ ZEN大学のドメインのGoogleアカウントユーザーのみが利用できるクローズドなZEN大学の授業評価レビューサイト<br>
  半匿名でレビューを投稿・閲覧できます
 </p>
 

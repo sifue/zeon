@@ -16,19 +16,19 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata = {
   metadataBase: new URL(defaultUrl),
-  title: 'ZEN大授業評価サイト ZEON (非公式)',
+  title: 'ZEN大授業評価レビューサイト ZEON (非公式)',
   description: 'ZEN大学の授業を評価・レビューできるプラットフォーム',
   openGraph: {
-    title: 'ZEN大授業評価サイト ZEON (非公式)',
+    title: 'ZEN大授業評価レビューサイト ZEON (非公式)',
     description: 'ZEN大学の授業を評価・レビューできるプラットフォーム',
     url: defaultUrl,
-    siteName: 'ZEN大授業評価サイト ZEON',
+    siteName: 'ZEN大授業評価レビューサイト ZEON',
     locale: 'ja_JP',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ZEN大授業評価サイト ZEON (非公式)',
+    title: 'ZEN大授業評価レビューサイト ZEON (非公式)',
     description: 'ZEN大学の授業を評価・レビューできるプラットフォーム',
   },
 };
@@ -63,7 +63,7 @@ export default function RootLayout({
                       <ZeonLogo />
                     </Link>
                     <div className="hidden md:block">
-                      <div className="text-sm font-medium">ZEN大授業評価サイト</div>
+                      <div className="text-sm font-medium">ZEN大授業評価レビューサイト</div>
                       <div className="text-xs">ZEON (非公式)</div>
                     </div>
                   </div>
