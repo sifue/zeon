@@ -30,6 +30,7 @@ type Evaluation = {
   is_useful?: boolean; // ユーザーが「役に立った」を押したかどうか
   is_invisible?: boolean; // 評価が非表示かどうか
   show_reports?: boolean; // 通報一覧の表示/非表示
+  isReviewExpanded?: boolean; // レビューが展開されているかどうか
 };
 
 // コンポーネントのプロパティ
@@ -146,7 +147,8 @@ export function EvaluationList({ evaluations: initialEvaluations, isAdmin = fals
             return { 
               ...evaluation, 
               is_useful: isUseful,
-              show_reports: false // 初期状態では通報一覧を非表示に
+              show_reports: false, // 初期状態では通報一覧を非表示に
+              isReviewExpanded: false // 初期状態ではレビューを折りたたむ
             };
           })
         );
@@ -156,6 +158,13 @@ export function EvaluationList({ evaluations: initialEvaluations, isAdmin = fals
     
     checkUsefulStatus();
   }, [initialEvaluations]);
+  
+  // レビューの展開/折りたたみを切り替えるハンドラ
+  const toggleReviewExpand = (index: number) => {
+    const newEvaluations = [...evaluations];
+    newEvaluations[index].isReviewExpanded = !newEvaluations[index].isReviewExpanded;
+    setEvaluations(newEvaluations);
+  };
   
   // 「役に立った」ボタンのクリックハンドラ
   const handleUsefulClick = async (evaluationId: number, index: number) => {
@@ -335,7 +344,17 @@ export function EvaluationList({ evaluations: initialEvaluations, isAdmin = fals
               </div>
             </div>
           </div>
-          <div className="whitespace-pre-line text-gray-700">{evaluation.review}</div>
+          <div className={`whitespace-pre-line text-gray-700 ${evaluation.isReviewExpanded ? '' : 'line-clamp-3'}`}>
+            {evaluation.review}
+          </div>
+          {evaluation.review.split('\n').length > 3 || evaluation.review.length > 150 ? (
+            <button
+              onClick={() => toggleReviewExpand(index)}
+              className="text-blue-600 hover:text-blue-800 hover:underline text-sm mt-1 focus:outline-none"
+            >
+              {evaluation.isReviewExpanded ? '閉じる' : '続きを読む'}
+            </button>
+          ) : null}
           
           {/* 管理者向け通報一覧 */}
           {isAdmin && evaluation.show_reports && (
