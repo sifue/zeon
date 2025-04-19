@@ -17,15 +17,15 @@ export default async function Signup(props: { searchParams: Promise<Message> }) 
   }
 
   return (
-    <form className="flex-1 flex flex-col min-w-64">
+    <form className="flex-1 flex flex-col w-full max-w-md px-4">
       <h1 className="text-2xl font-medium">アカウント登録</h1>
-      <p className="text-sm text text-foreground">
+      <p className="text-sm text-foreground">
         すでにアカウントをお持ちの方は{' '}
         <Link className="text-primary font-medium underline" href="/sign-in">
           ログイン
         </Link>
       </p>
-      <div className="flex flex-col gap-2 mt-8">
+      <div className="flex flex-col gap-2 mt-6 sm:mt-8">
         <GoogleAuthButton />
         <FormMessage message={searchParams} />
         <div className="mt-4 text-sm text-gray-500 bg-gray-100 p-3 rounded-md">
@@ -34,7 +34,7 @@ export default async function Signup(props: { searchParams: Promise<Message> }) 
           <p>その他のドメインのアカウントではサインインできません。</p>
         </div>
         <div className="mt-4 text-xs text-gray-500">
-          <p>
+          <p className="flex flex-wrap gap-1">
             アカウントを登録することで、
             <Link href="/tos" className="text-primary hover:underline">利用規約</Link>、
             <Link href="/privacy-policy" className="text-primary hover:underline">プライバシーポリシー</Link>、

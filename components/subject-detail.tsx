@@ -51,12 +51,12 @@ export function SubjectDetail({ subject, stats }: SubjectDetailProps) {
       <div className="flex flex-col gap-4">
         {/* ヘッダー部分 */}
         <div className="border-b pb-4">
-          <div className="flex justify-between items-start">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
             <div>
               <h1 className="text-2xl font-bold">{subject.name}</h1>
               <p className="text-gray-500">科目コード: {subject.code}</p>
             </div>
-            <div className="flex flex-col items-end">
+            <div className="flex flex-col items-start sm:items-end">
               <div className="flex items-center gap-2">
                 {stats.count > 0 ? (
                   <>

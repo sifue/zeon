@@ -131,7 +131,7 @@ export function SubjectReportsList({ subjectCode, isAdmin }: SubjectReportsListP
         <div className="space-y-4">
           {reports.map((report) => (
             <div key={report.id} className="border-b border-gray-200 pb-4 last:border-b-0 last:pb-0">
-              <div className="flex justify-between items-start mb-2">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 mb-2">
                 <div>
                   <div className="text-sm font-medium">
                     対象評価者: {report.evaluator_name}
@@ -140,14 +140,14 @@ export function SubjectReportsList({ subjectCode, isAdmin }: SubjectReportsListP
                     ユーザーID: {report.evaluations.evaluator}
                   </div>
                 </div>
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-gray-500 mt-1 sm:mt-0">
                   {formatDate(report.created_at)}
                 </div>
               </div>
-              <div className="text-sm mb-1">
+              <div className="text-sm mb-2">
                 <span className="font-medium">通報者:</span> {report.reporter_name}
               </div>
-              <div className="text-sm mb-1">
+              <div className="text-sm mb-2">
                 <span className="font-medium">理由:</span> {formatReportReasons(report)}
               </div>
               {report.comment && (

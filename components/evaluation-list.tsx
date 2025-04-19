@@ -273,7 +273,7 @@ export function EvaluationList({ evaluations: initialEvaluations, isAdmin = fals
               この評価は運営チームにより非表示に設定されています
             </div>
           )}
-          <div className="flex justify-between items-start mb-4">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <StarRating rating={evaluation.evaluation} />
@@ -285,52 +285,54 @@ export function EvaluationList({ evaluations: initialEvaluations, isAdmin = fals
                 {formatEvaluatorName(evaluation)}さんが{formatDate(evaluation.created_at)}
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm text-gray-500 mr-1">
                 役に立った: {evaluation.useful_count}
               </span>
-              <button
-                className={`flex items-center gap-1 px-2 py-1 rounded-md ${
-                  evaluation.is_useful 
-                    ? 'text-white bg-blue-500 hover:bg-blue-600' 
-                    : 'text-gray-500 hover:text-blue-500 hover:bg-gray-100'
-                }`}
-                onClick={() => handleUsefulClick(evaluation.id, index)}
-                aria-label="役に立った"
-              >
-                <ThumbsUp size={16} />
-              </button>
-              <button
-                className="text-gray-500 hover:text-red-500 hover:bg-gray-100 px-2 py-1 rounded-md ml-2 flex items-center"
-                onClick={() => setReportModal({ isOpen: true, evaluationId: evaluation.id })}
-                aria-label="通報"
-              >
-                <Flag size={16} />
-              </button>
-              {isAdmin && (
-                <>
-                  <button
-                    className={`flex items-center gap-1 px-2 py-1 rounded-md ml-2 ${
-                      evaluation.is_invisible 
-                        ? 'text-green-500 hover:text-green-600 hover:bg-gray-100' 
-                        : 'text-gray-500 hover:text-red-500 hover:bg-gray-100'
-                    }`}
-                    onClick={() => handleVisibilityToggle(evaluation, index)}
-                    aria-label={evaluation.is_invisible ? '表示に戻す' : '非表示にする'}
-                    title={evaluation.is_invisible ? '表示に戻す' : '非表示にする'}
-                  >
-                    {evaluation.is_invisible ? <Eye size={16} /> : <EyeOff size={16} />}
-                  </button>
-                  <button
-                    className="text-gray-500 hover:text-blue-500 hover:bg-gray-100 px-2 py-1 rounded-md ml-2 flex items-center"
-                    onClick={() => handleToggleReports(index)}
-                    aria-label={evaluation.show_reports ? '通報一覧を閉じる' : '通報一覧を表示'}
-                    title={evaluation.show_reports ? '通報一覧を閉じる' : '通報一覧を表示'}
-                  >
-                    {evaluation.show_reports ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                  </button>
-                </>
-              )}
+              <div className="flex flex-wrap gap-2">
+                <button
+                  className={`flex items-center gap-1 px-2 py-1 rounded-md ${
+                    evaluation.is_useful 
+                      ? 'text-white bg-blue-500 hover:bg-blue-600' 
+                      : 'text-gray-500 hover:text-blue-500 hover:bg-gray-100'
+                  }`}
+                  onClick={() => handleUsefulClick(evaluation.id, index)}
+                  aria-label="役に立った"
+                >
+                  <ThumbsUp size={16} />
+                </button>
+                <button
+                  className="text-gray-500 hover:text-red-500 hover:bg-gray-100 px-2 py-1 rounded-md flex items-center"
+                  onClick={() => setReportModal({ isOpen: true, evaluationId: evaluation.id })}
+                  aria-label="通報"
+                >
+                  <Flag size={16} />
+                </button>
+                {isAdmin && (
+                  <>
+                    <button
+                      className={`flex items-center gap-1 px-2 py-1 rounded-md ${
+                        evaluation.is_invisible 
+                          ? 'text-green-500 hover:text-green-600 hover:bg-gray-100' 
+                          : 'text-gray-500 hover:text-red-500 hover:bg-gray-100'
+                      }`}
+                      onClick={() => handleVisibilityToggle(evaluation, index)}
+                      aria-label={evaluation.is_invisible ? '表示に戻す' : '非表示にする'}
+                      title={evaluation.is_invisible ? '表示に戻す' : '非表示にする'}
+                    >
+                      {evaluation.is_invisible ? <Eye size={16} /> : <EyeOff size={16} />}
+                    </button>
+                    <button
+                      className="text-gray-500 hover:text-blue-500 hover:bg-gray-100 px-2 py-1 rounded-md flex items-center"
+                      onClick={() => handleToggleReports(index)}
+                      aria-label={evaluation.show_reports ? '通報一覧を閉じる' : '通報一覧を表示'}
+                      title={evaluation.show_reports ? '通報一覧を閉じる' : '通報一覧を表示'}
+                    >
+                      {evaluation.show_reports ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
           <div className="whitespace-pre-line text-gray-700">{evaluation.review}</div>

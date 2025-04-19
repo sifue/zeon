@@ -57,7 +57,7 @@ export default async function DashboardPage() {
   const recentReports = isAdmin ? await getRecentReports(5) : [];
 
   return (
-    <div className="flex-1 w-full flex flex-col gap-4 pt-2 pb-4 px-4 md:pt-3 md:pb-8 md:px-8">
+    <div className="flex-1 w-full flex flex-col gap-4 pt-2 pb-4 px-2 sm:px-4 md:pt-3 md:pb-8 md:px-8">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold">ダッシュボード</h1>
         
