@@ -1110,7 +1110,8 @@ export const getRecentReports = async (limit = 5) => {
       year: evaluation ? evaluation.year : 0,
       quarter: evaluation ? evaluation.quarter : '',
       evaluation_created_at: evaluation ? evaluation.created_at : '',
-      useful_count: usefulCounts[report.evaluation_id] || 0
+      useful_count: usefulCounts[report.evaluation_id] || 0,
+      code: evaluation ? evaluation.code : '' // 科目コードを追加
     };
   });
   
