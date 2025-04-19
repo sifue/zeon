@@ -90,7 +90,7 @@ export function EvaluationForm({
   const [review, setReview] = useState<string>(existingEvaluation?.review || '');
   const [isReviewTooLong, setIsReviewTooLong] = useState<boolean>(false);
   const MAX_REVIEW_LENGTH = 10000; // 最大文字数を10000文字に設定
-  const [year, setYear] = useState<number>(existingEvaluation?.year || getCurrentYear());
+  const [year, setYear] = useState<number>(existingEvaluation?.year || Math.max(getCurrentYear(), 2025));
   const [quarter, setQuarter] = useState<string>(existingEvaluation?.quarter || 'Q1');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
@@ -199,7 +199,7 @@ export function EvaluationForm({
         // フォームをリセット
         setEvaluation(0);
         setReview('');
-        setYear(getCurrentYear());
+        setYear(Math.max(getCurrentYear(), 2025));
         setQuarter('Q1');
         setFormKey(prev => prev + 1);
       } else {
@@ -269,14 +269,11 @@ export function EvaluationForm({
               onChange={(e) => setYear(Number(e.target.value))}
               className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-300"
             >
-              {[...Array(5)].map((_, i) => {
-                const yearValue = getCurrentYear() - i;
-                return (
-                  <option key={yearValue} value={yearValue}>
-                    {yearValue}年度
-                  </option>
-                );
-              })}
+    {[2025, 2026, 2027, 2028, 2029, 2030, 2031, 2032].map((yearValue) => (
+      <option key={yearValue} value={yearValue}>
+        {yearValue}年度
+      </option>
+    ))}
             </select>
           </div>
           
