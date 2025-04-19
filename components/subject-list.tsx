@@ -112,9 +112,9 @@ export function SubjectList({ allSubjects, evaluationStats }: SubjectListProps) 
   return (
     <div>
       {/* タブUI */}
-      <div className="flex border-b mb-4">
+      <div className="flex flex-wrap border-b mb-4">
         <button
-          className={`px-4 py-2 font-medium ${
+          className={`px-2 sm:px-4 py-2 text-sm sm:text-base font-medium ${
             activeTab === 1
               ? 'border-b-2 border-blue-500 text-blue-600'
               : 'text-gray-500 hover:text-gray-700'
@@ -124,7 +124,7 @@ export function SubjectList({ allSubjects, evaluationStats }: SubjectListProps) 
           1年次科目
         </button>
         <button
-          className={`px-4 py-2 font-medium ${
+          className={`px-2 sm:px-4 py-2 text-sm sm:text-base font-medium ${
             activeTab === 2
               ? 'border-b-2 border-blue-500 text-blue-600'
               : 'text-gray-500 hover:text-gray-700'
@@ -134,7 +134,7 @@ export function SubjectList({ allSubjects, evaluationStats }: SubjectListProps) 
           2年次科目
         </button>
         <button
-          className={`px-4 py-2 font-medium ${
+          className={`px-2 sm:px-4 py-2 text-sm sm:text-base font-medium ${
             activeTab === 3
               ? 'border-b-2 border-blue-500 text-blue-600'
               : 'text-gray-500 hover:text-gray-700'
@@ -144,7 +144,7 @@ export function SubjectList({ allSubjects, evaluationStats }: SubjectListProps) 
           3年次科目
         </button>
         <button
-          className={`px-4 py-2 font-medium ${
+          className={`px-2 sm:px-4 py-2 text-sm sm:text-base font-medium ${
             activeTab === 4
               ? 'border-b-2 border-blue-500 text-blue-600'
               : 'text-gray-500 hover:text-gray-700'
@@ -155,56 +155,105 @@ export function SubjectList({ allSubjects, evaluationStats }: SubjectListProps) 
         </button>
       </div>
       
-      {/* 科目テーブル */}
-      <Table>
-        <TableCaption>科目一覧（想定年次順 {`>`} 科目コード順）</TableCaption>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[40%] min-w-[250px]">科目名</TableHead>
-            <TableHead className="w-[30%] min-w-[150px]">教員</TableHead>
-            <TableHead className="w-[10%] text-center">年次</TableHead>
-            <TableHead className="w-[10%] text-center">評価</TableHead>
-            <TableHead className="w-[10%] text-center">件数</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {currentSubjects.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={5} className="text-center py-8">
-                表示する科目がありません
-              </TableCell>
-            </TableRow>
-          ) : (
-            currentSubjects.map((subject) => {
+      {/* モバイル表示用のカードレイアウト */}
+      <div className="block sm:hidden">
+        {currentSubjects.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            表示する科目がありません
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {currentSubjects.map((subject) => {
               // 評価統計情報を取得（存在しない場合はデフォルト値を使用）
               const stats = evaluationStats[subject.code] || { count: 0, average: 0 };
               
               return (
-                <TableRow key={subject.code}>
-                  <TableCell className="font-medium whitespace-normal">
+                <div key={subject.code} className="border rounded-lg p-3 bg-white">
+                  <div className="font-medium">
                     <Link 
                       href={`/subject/${subject.code}`}
                       className="text-blue-600 hover:text-blue-800 hover:underline"
                     >
                       {subject.name}
                     </Link>
-                  </TableCell>
-                  <TableCell className="whitespace-normal">{formatFaculties(subject.faculties)}</TableCell>
-                  <TableCell className="text-center">{subject.enrollment_grade}</TableCell>
-                  <TableCell className="text-center">
-                    {stats.count > 0 ? (
-                      <StarRating rating={stats.average} />
-                    ) : (
-                      <span className="text-gray-400">-</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-center">{stats.count}</TableCell>
-                </TableRow>
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    教員: {formatFaculties(subject.faculties)}
+                  </div>
+                  <div className="flex justify-between items-center mt-2">
+                    <div className="text-sm text-gray-500">
+                      {subject.enrollment_grade}年次
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {stats.count > 0 ? (
+                        <>
+                          <StarRating rating={stats.average} />
+                          <span className="text-sm text-gray-500">({stats.count}件)</span>
+                        </>
+                      ) : (
+                        <span className="text-sm text-gray-400">評価なし</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
               );
-            })
-          )}
-        </TableBody>
-      </Table>
+            })}
+          </div>
+        )}
+      </div>
+      
+      {/* デスクトップ表示用のテーブルレイアウト */}
+      <div className="hidden sm:block">
+        <Table>
+          <TableCaption>科目一覧（想定年次順 {`>`} 科目コード順）</TableCaption>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[40%] min-w-[250px]">科目名</TableHead>
+              <TableHead className="w-[30%] min-w-[150px]">教員</TableHead>
+              <TableHead className="w-[10%] text-center">年次</TableHead>
+              <TableHead className="w-[10%] text-center">評価</TableHead>
+              <TableHead className="w-[10%] text-center">件数</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {currentSubjects.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-8">
+                  表示する科目がありません
+                </TableCell>
+              </TableRow>
+            ) : (
+              currentSubjects.map((subject) => {
+                // 評価統計情報を取得（存在しない場合はデフォルト値を使用）
+                const stats = evaluationStats[subject.code] || { count: 0, average: 0 };
+                
+                return (
+                  <TableRow key={subject.code}>
+                    <TableCell className="font-medium whitespace-normal">
+                      <Link 
+                        href={`/subject/${subject.code}`}
+                        className="text-blue-600 hover:text-blue-800 hover:underline"
+                      >
+                        {subject.name}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="whitespace-normal">{formatFaculties(subject.faculties)}</TableCell>
+                    <TableCell className="text-center">{subject.enrollment_grade}</TableCell>
+                    <TableCell className="text-center">
+                      {stats.count > 0 ? (
+                        <StarRating rating={stats.average} />
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-center">{stats.count}</TableCell>
+                  </TableRow>
+                );
+              })
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }
