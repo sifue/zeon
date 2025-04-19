@@ -15,19 +15,19 @@ export default async function AuthButton() {
   if (!hasEnvVars) {
     return (
       <>
-        <div className="flex gap-4 items-center">
+        <div className="flex flex-col sm:flex-row gap-4 items-center">
           <div>
             <Badge variant={'default'} className="font-normal pointer-events-none">
               .env.localファイルにanon keyとURLを設定してください
             </Badge>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <Button
               asChild
               size="sm"
               variant={'outline'}
               disabled
-              className="opacity-75 cursor-none pointer-events-none"
+              className="opacity-75 cursor-none pointer-events-none w-full sm:w-auto"
             >
               <Link href="/sign-in">ログイン</Link>
             </Button>
@@ -36,7 +36,7 @@ export default async function AuthButton() {
               size="sm"
               variant={'default'}
               disabled
-              className="opacity-75 cursor-none pointer-events-none"
+              className="opacity-75 cursor-none pointer-events-none w-full sm:w-auto"
             >
               <Link href="/sign-up">アカウント登録</Link>
             </Button>
@@ -46,20 +46,20 @@ export default async function AuthButton() {
     );
   }
   return user ? (
-    <div className="flex items-center gap-4">
-      こんにちは、{user.email}さん！
+    <div className="flex flex-col sm:flex-row items-center gap-4">
+      <span className="text-sm">こんにちは、{user.email}さん！</span>
       <form action={signOutAction}>
-        <Button type="submit" variant={'outline'}>
+        <Button type="submit" variant={'outline'} className="w-full sm:w-auto">
           ログアウト
         </Button>
       </form>
     </div>
   ) : (
-    <div className="flex gap-2">
-      <Button asChild size="sm" variant={'outline'}>
+    <div className="flex flex-col sm:flex-row gap-2">
+      <Button asChild size="sm" variant={'outline'} className="w-full sm:w-auto">
         <Link href="/sign-in">ログイン</Link>
       </Button>
-      <Button asChild size="sm" variant={'default'}>
+      <Button asChild size="sm" variant={'default'} className="w-full sm:w-auto">
         <Link href="/sign-up">アカウント登録</Link>
       </Button>
     </div>

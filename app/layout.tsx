@@ -56,8 +56,8 @@ export default function RootLayout({
         >
           <main className="min-h-screen flex flex-col items-center">
             <div className="flex-1 w-full flex flex-col gap-20 items-center">
-              <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">
-                <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
+              <nav className="w-full flex justify-center border-b border-b-foreground/10 min-h-16">
+                <div className="w-full max-w-5xl flex flex-col sm:flex-row justify-between items-center p-3 px-4 text-sm gap-3">
                   <div className="flex gap-5 items-center">
                     <Link href={'/'}>
                       <ZeonLogo />
@@ -70,17 +70,17 @@ export default function RootLayout({
                   {!hasEnvVars ? <EnvVarWarning /> : <HeaderAuth />}
                 </div>
               </nav>
-              <div className="flex flex-col gap-20 max-w-5xl p-5">{children}</div>
+              <div className="flex flex-col gap-12 sm:gap-20 max-w-5xl p-4">{children}</div>
 
-              <footer className="w-full flex flex-col items-center justify-center border-t mx-auto text-center text-xs gap-4 py-16">
-                <div className="flex items-center gap-8">
+              <footer className="w-full flex flex-col items-center justify-center border-t mx-auto text-center text-xs gap-4 py-8 sm:py-16 px-4">
+                <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8">
                   <p>
                     Powered by ZEON運営チーム
                   </p>
                   <ThemeSwitcher />
                   <FooterContactLink />
                 </div>
-                <div className="flex gap-4 mt-2">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mt-2 items-center">
                   <Link href="/tos" className="text-xs hover:underline">利用規約</Link>
                   <Link href="/privacy-policy" className="text-xs hover:underline">プライバシーポリシー</Link>
                   <Link href="/community-guideline" className="text-xs hover:underline">コミュニティガイドライン</Link>
