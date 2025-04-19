@@ -101,7 +101,7 @@ export function RecentReports({ reports: initialReports }: RecentReportsProps) {
   };
   if (reports.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
+      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
         まだ通報がありません。
       </div>
     );
@@ -112,14 +112,14 @@ export function RecentReports({ reports: initialReports }: RecentReportsProps) {
       {reports.map((report: Report, index: number) => (
         <div 
           key={report.id} 
-          className="bg-white rounded-lg shadow-md p-4"
+          className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4"
         >
-          <div className="bg-red-50 text-red-800 px-3 py-2 rounded-md mb-3 text-sm font-medium">
+          <div className="bg-red-50 dark:bg-red-900 text-red-800 dark:text-red-300 px-3 py-2 rounded-md mb-3 text-sm font-medium">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start">
               <div>
                 <span className="font-semibold">通報理由:</span> {formatReportReasons(report)}
               </div>
-              <div className="text-xs text-gray-500 mt-1 sm:mt-0">
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 sm:mt-0">
                 {formatDate(report.created_at)}
               </div>
             </div>
@@ -134,7 +134,7 @@ export function RecentReports({ reports: initialReports }: RecentReportsProps) {
                 {report.comment.split('\n').length > 3 || report.comment.length > 150 ? (
                   <button
                     onClick={() => toggleCommentExpand(index)}
-                    className="text-blue-600 hover:text-blue-800 hover:underline text-sm mt-1 focus:outline-none"
+                    className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline text-sm mt-1 focus:outline-none"
                   >
                     {report.isCommentExpanded ? '閉じる' : '続きを読む'}
                   </button>
@@ -148,36 +148,36 @@ export function RecentReports({ reports: initialReports }: RecentReportsProps) {
               <div>
                 <Link 
                   href={`/subject/${report.code}`}
-                  className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline font-medium"
                 >
                   {report.subject_name}
                 </Link>
-                <div className="text-sm text-gray-500 mt-1">
+                <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                   教員: {formatFaculties(report.faculties)}
                 </div>
                 <div className="flex items-center gap-2 mt-2">
                   <StarRating rating={report.evaluation} />
-                  <span className="text-gray-500 text-sm">
+                  <span className="text-gray-500 dark:text-gray-400 text-sm">
                     {report.year}年度 {report.quarter}
                   </span>
                 </div>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                   {report.evaluator_name}さん (ID: {report.evaluator_id}) が{formatDate(report.evaluation_created_at)}
                 </p>
               </div>
               <div className="flex items-center gap-2 mt-2 sm:mt-0">
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-gray-500 dark:text-gray-400">
                   役に立った: {report.useful_count}
                 </span>
               </div>
             </div>
-            <div className={`whitespace-pre-line text-gray-700 text-sm ${report.isReviewExpanded ? '' : 'line-clamp-3'}`}>
+            <div className={`whitespace-pre-line text-gray-700 dark:text-gray-300 text-sm ${report.isReviewExpanded ? '' : 'line-clamp-3'}`}>
               {report.review}
             </div>
             {report.review.split('\n').length > 3 || report.review.length > 150 ? (
               <button
                 onClick={() => toggleReviewExpand(index)}
-                className="text-blue-600 hover:text-blue-800 hover:underline text-sm mt-1 focus:outline-none"
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline text-sm mt-1 focus:outline-none"
               >
                 {report.isReviewExpanded ? '閉じる' : '続きを読む'}
               </button>

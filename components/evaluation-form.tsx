@@ -64,13 +64,13 @@ const StarRatingInput = ({ value, onChange }: { value: number; onChange: (rating
           <span className={`${
             (hoverRating || value) >= star 
               ? 'text-yellow-500' 
-              : 'text-gray-300'
+              : 'text-gray-300 dark:text-gray-600'
           }`}>
             ★
           </span>
         </button>
       ))}
-      <span className="ml-2 text-gray-700">
+      <span className="ml-2 text-gray-700 dark:text-gray-300">
         {value > 0 ? `${value}点` : '評価を選択'}
       </span>
     </div>
@@ -216,13 +216,13 @@ export function EvaluationForm({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-xl font-semibold mb-4">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+      <h2 className="text-xl font-semibold mb-4 dark:text-gray-100">
         {existingEvaluation ? '評価を編集' : '新しい評価を投稿'}
       </h2>
       
       {isInvisible && (
-        <div className="bg-red-100 text-red-800 px-4 py-3 rounded-md mb-4 text-sm font-medium flex items-center">
+        <div className="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300 px-4 py-3 rounded-md mb-4 text-sm font-medium flex items-center">
           <EyeOff size={18} className="mr-2" />
           <div>
             <p className="font-bold">この評価は運営チームにより非表示に設定されています</p>
@@ -246,7 +246,7 @@ export function EvaluationForm({
         <input type="hidden" name="evaluation" value={evaluation} />
         {/* 評価の星の数 */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             評価
           </label>
           <StarRatingInput 
@@ -259,7 +259,7 @@ export function EvaluationForm({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* 評価した年度 */}
           <div>
-            <label htmlFor="year" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="year" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               評価した年度
             </label>
             <select
@@ -267,7 +267,7 @@ export function EvaluationForm({
               name="year"
               value={year}
               onChange={(e) => setYear(Number(e.target.value))}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-300"
             >
               {[...Array(5)].map((_, i) => {
                 const yearValue = getCurrentYear() - i;
@@ -282,7 +282,7 @@ export function EvaluationForm({
           
           {/* 評価したクォーター */}
           <div>
-            <label htmlFor="quarter" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="quarter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               評価したクォーター
             </label>
             <select
@@ -290,7 +290,7 @@ export function EvaluationForm({
               name="quarter"
               value={quarter}
               onChange={(e) => setQuarter(e.target.value)}
-              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-300"
             >
               {/* 科目の開講クォーターから選択肢を生成 */}
               {subject && subject.quarters && Array.isArray(subject.quarters) ? (
@@ -315,7 +315,7 @@ export function EvaluationForm({
         
         {/* レビュー */}
         <div>
-          <label htmlFor="review" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="review" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             レビュー
           </label>
           <textarea
@@ -325,18 +325,18 @@ export function EvaluationForm({
             onChange={handleReviewChange}
             rows={5}
             placeholder="この科目についてのレビューを書いてください..."
-            className={`w-full rounded-md border-gray-300 shadow-sm ${
+            className={`w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm dark:bg-gray-700 dark:text-gray-300 ${
               isReviewTooLong
-                ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                : 'focus:border-blue-500 focus:ring-blue-500'
+                ? 'border-red-500 focus:border-red-500 focus:ring-red-500 dark:border-red-700 dark:focus:border-red-700 dark:focus:ring-red-700'
+                : 'focus:border-blue-500 focus:ring-blue-500 dark:focus:border-blue-700 dark:focus:ring-blue-700'
             }`}
           />
           <div className="flex justify-between text-sm mt-1">
-            <span className={isReviewTooLong ? "text-red-500" : "text-gray-500"}>
+            <span className={isReviewTooLong ? "text-red-500 dark:text-red-400" : "text-gray-500 dark:text-gray-400"}>
               {review.length} / {MAX_REVIEW_LENGTH}文字
             </span>
             {isReviewTooLong && (
-              <span className="text-red-500">
+              <span className="text-red-500 dark:text-red-400">
                 1万文字を超えています。投稿時に1万文字までに切り詰められます。
               </span>
             )}
@@ -345,7 +345,7 @@ export function EvaluationForm({
         
         {/* エラーメッセージ */}
         {error && (
-          <div className="text-red-500 text-sm">{error}</div>
+          <div className="text-red-500 dark:text-red-400 text-sm">{error}</div>
         )}
         
         {/* ボタン */}
@@ -361,7 +361,7 @@ export function EvaluationForm({
                   handleDelete(formData);
                 }}
                 disabled={isDeleting || isSubmitting}
-                className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
+                className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 dark:bg-red-700 hover:bg-red-700 dark:hover:bg-red-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-red-400 dark:focus:ring-offset-gray-800 disabled:opacity-50"
               >
                 <Trash2 className="mr-2 h-4 w-4" />
                 {isDeleting ? '削除中...' : '削除'}
@@ -372,7 +372,7 @@ export function EvaluationForm({
           <button
             type="submit"
             disabled={isSubmitting || isDeleting}
-            className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+            className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400 dark:focus:ring-offset-gray-800 disabled:opacity-50"
           >
             {existingEvaluation ? (
               <>

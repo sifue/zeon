@@ -106,9 +106,9 @@ export function SubjectReportsList({ subjectCode, isAdmin }: SubjectReportsListP
   if (isLoading) {
     return (
       <div className="mt-6 mb-6">
-        <h2 className="text-2xl font-semibold mb-4">通報一覧</h2>
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="text-center py-4 text-gray-500">通報一覧を読み込み中...</div>
+        <h2 className="text-2xl font-semibold mb-4 dark:text-gray-100">通報一覧</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <div className="text-center py-4 text-gray-500 dark:text-gray-400">通報一覧を読み込み中...</div>
         </div>
       </div>
     );
@@ -117,9 +117,9 @@ export function SubjectReportsList({ subjectCode, isAdmin }: SubjectReportsListP
   if (error) {
     return (
       <div className="mt-6 mb-6">
-        <h2 className="text-2xl font-semibold mb-4">通報一覧</h2>
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="text-center py-4 text-red-500">{error}</div>
+        <h2 className="text-2xl font-semibold mb-4 dark:text-gray-100">通報一覧</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <div className="text-center py-4 text-red-500 dark:text-red-400">{error}</div>
         </div>
       </div>
     );
@@ -129,9 +129,9 @@ export function SubjectReportsList({ subjectCode, isAdmin }: SubjectReportsListP
   if (reports.length === 0) {
     return (
       <div className="mt-6 mb-6">
-        <h2 className="text-2xl font-semibold mb-4">通報一覧</h2>
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="text-center py-4 text-gray-500">この科目に対する通報はありません</div>
+        <h2 className="text-2xl font-semibold mb-4 dark:text-gray-100">通報一覧</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <div className="text-center py-4 text-gray-500 dark:text-gray-400">この科目に対する通報はありません</div>
         </div>
       </div>
     );
@@ -139,39 +139,39 @@ export function SubjectReportsList({ subjectCode, isAdmin }: SubjectReportsListP
   
   return (
     <div className="mt-6 mb-6">
-      <h2 className="text-2xl font-semibold mb-4">通報一覧</h2>
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <h2 className="text-2xl font-semibold mb-4 dark:text-gray-100">通報一覧</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
         <div className="space-y-4">
           {reports.map((report, index) => (
-            <div key={report.id} className="border-b border-gray-200 pb-4 last:border-b-0 last:pb-0">
+            <div key={report.id} className="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0 last:pb-0">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 mb-2">
                 <div>
-                  <div className="text-sm font-medium">
+                  <div className="text-sm font-medium dark:text-gray-300">
                     対象評価者: {report.evaluator_name}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
                     ユーザーID: {report.evaluations.evaluator}
                   </div>
                 </div>
-                <div className="text-xs text-gray-500 mt-1 sm:mt-0">
+                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 sm:mt-0">
                   {formatDate(report.created_at)}
                 </div>
               </div>
-              <div className="text-sm mb-2">
+              <div className="text-sm mb-2 dark:text-gray-300">
                 <span className="font-medium">通報者:</span> {report.reporter_name}
               </div>
-              <div className="text-sm mb-2">
+              <div className="text-sm mb-2 dark:text-gray-300">
                 <span className="font-medium">理由:</span> {formatReportReasons(report)}
               </div>
               {report.comment && (
                 <>
-                  <div className={`text-sm ${report.isCommentExpanded ? '' : 'line-clamp-3'}`}>
+                  <div className={`text-sm dark:text-gray-300 ${report.isCommentExpanded ? '' : 'line-clamp-3'}`}>
                     <span className="font-medium">コメント:</span> {report.comment}
                   </div>
                   {report.comment.split('\n').length > 3 || report.comment.length > 150 ? (
                     <button
                       onClick={() => toggleCommentExpand(index)}
-                      className="text-blue-600 hover:text-blue-800 hover:underline text-sm mt-1 focus:outline-none"
+                      className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline text-sm mt-1 focus:outline-none"
                     >
                       {report.isCommentExpanded ? '閉じる' : '続きを読む'}
                     </button>
