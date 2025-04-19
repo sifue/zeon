@@ -124,7 +124,7 @@ export function ReportList({ evaluationId }: ReportListProps) {
       <div className="space-y-3">
         {reports.map((report) => (
           <div key={report.id} className="bg-gray-50 p-3 rounded-md border border-gray-200">
-            <div className="flex justify-between items-start mb-1">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 mb-2">
               <div className="text-sm font-medium">
                 {report.reporter_name}さん
               </div>
@@ -132,7 +132,7 @@ export function ReportList({ evaluationId }: ReportListProps) {
                 {formatDate(report.created_at)}
               </div>
             </div>
-            <div className="text-sm mb-1">
+            <div className="text-sm mb-2">
               <span className="font-medium">理由:</span> {formatReportReasons(report)}
             </div>
             {report.comment && (
