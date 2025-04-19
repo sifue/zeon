@@ -22,6 +22,7 @@ type Report = {
   is_other: boolean;
   comment: string;
   created_at: string;
+  isCommentExpanded?: boolean; // コメントが展開されているかどうか
 };
 
 // コンポーネントのプロパティ
@@ -59,6 +60,13 @@ export function SubjectReportsList({ subjectCode, isAdmin }: SubjectReportsListP
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   
+  // コメントの展開/折りたたみを切り替えるハンドラ
+  const toggleCommentExpand = (index: number) => {
+    const newReports = [...reports];
+    newReports[index].isCommentExpanded = !newReports[index].isCommentExpanded;
+    setReports(newReports);
+  };
+  
   // コンポーネントがマウントされたときに通報一覧を取得
   useEffect(() => {
     // 管理者でない場合は何も表示しない
@@ -73,7 +81,12 @@ export function SubjectReportsList({ subjectCode, isAdmin }: SubjectReportsListP
         
         // 通報一覧を取得
         const reportData = await getReportsBySubjectCode(subjectCode);
-        setReports(reportData);
+        // 各通報にisCommentExpandedプロパティを追加
+        const reportsWithExpandState = reportData.map(report => ({
+          ...report,
+          isCommentExpanded: false
+        }));
+        setReports(reportsWithExpandState);
       } catch (err) {
         setError('通報一覧の取得中にエラーが発生しました');
         console.error('通報一覧の取得中にエラーが発生しました:', err);
@@ -129,7 +142,7 @@ export function SubjectReportsList({ subjectCode, isAdmin }: SubjectReportsListP
       <h2 className="text-2xl font-semibold mb-4">通報一覧</h2>
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="space-y-4">
-          {reports.map((report) => (
+          {reports.map((report, index) => (
             <div key={report.id} className="border-b border-gray-200 pb-4 last:border-b-0 last:pb-0">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 mb-2">
                 <div>
@@ -151,9 +164,19 @@ export function SubjectReportsList({ subjectCode, isAdmin }: SubjectReportsListP
                 <span className="font-medium">理由:</span> {formatReportReasons(report)}
               </div>
               {report.comment && (
-                <div className="text-sm">
-                  <span className="font-medium">コメント:</span> {report.comment}
-                </div>
+                <>
+                  <div className={`text-sm ${report.isCommentExpanded ? '' : 'line-clamp-3'}`}>
+                    <span className="font-medium">コメント:</span> {report.comment}
+                  </div>
+                  {report.comment.split('\n').length > 3 || report.comment.length > 150 ? (
+                    <button
+                      onClick={() => toggleCommentExpand(index)}
+                      className="text-blue-600 hover:text-blue-800 hover:underline text-sm mt-1 focus:outline-none"
+                    >
+                      {report.isCommentExpanded ? '閉じる' : '続きを読む'}
+                    </button>
+                  ) : null}
+                </>
               )}
             </div>
           ))}

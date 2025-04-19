@@ -31,6 +31,7 @@ type Evaluation = {
   useful_count: number;
   is_useful?: boolean; // ユーザーが「役に立った」を押したかどうか
   is_invisible?: boolean; // 評価が非表示かどうか
+  isExpanded?: boolean; // レビューが展開されているかどうか
 };
 
 // コンポーネントのプロパティ
@@ -124,7 +125,9 @@ const saveUserUseful = (evaluationId: number, isUseful: boolean) => {
 // 最近の評価一覧表示コンポーネント
 export function RecentEvaluations({ evaluations: initialEvaluations, isAdmin = false }: RecentEvaluationsProps) {
   // 評価一覧の状態
-  const [evaluations, setEvaluations] = useState<Evaluation[]>(initialEvaluations);
+  const [evaluations, setEvaluations] = useState<Evaluation[]>(
+    initialEvaluations.map(evaluation => ({ ...evaluation, isExpanded: false }))
+  );
   
   // 通報モーダルの状態
   const [reportModal, setReportModal] = useState<ReportModalState>({
@@ -149,6 +152,13 @@ export function RecentEvaluations({ evaluations: initialEvaluations, isAdmin = f
     checkUsefulStatus();
   }, [initialEvaluations]);
   
+  // レビューの展開/折りたたみを切り替えるハンドラ
+  const toggleReviewExpand = (index: number) => {
+    const newEvaluations = [...evaluations];
+    newEvaluations[index].isExpanded = !newEvaluations[index].isExpanded;
+    setEvaluations(newEvaluations);
+  };
+
   // 「役に立った」ボタンのクリックハンドラ
   const handleUsefulClick = async (evaluationId: number, index: number) => {
     try {
@@ -309,7 +319,17 @@ export function RecentEvaluations({ evaluations: initialEvaluations, isAdmin = f
               </div>
             </div>
           </div>
-          <div className="whitespace-pre-line text-gray-700 text-sm line-clamp-3">{evaluation.review}</div>
+          <div className={`whitespace-pre-line text-gray-700 text-sm ${evaluation.isExpanded ? '' : 'line-clamp-3'}`}>
+            {evaluation.review}
+          </div>
+          {evaluation.review.split('\n').length > 3 || evaluation.review.length > 150 ? (
+            <button
+              onClick={() => toggleReviewExpand(index)}
+              className="text-blue-600 hover:text-blue-800 hover:underline text-sm mt-1 focus:outline-none"
+            >
+              {evaluation.isExpanded ? '閉じる' : '続きを読む'}
+            </button>
+          ) : null}
         </div>
       ))}
       

@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { StarRating } from '@/components/star-rating';
 import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale';
@@ -30,6 +30,8 @@ type Report = {
   quarter: string;
   evaluation_created_at: string;
   useful_count: number;
+  isCommentExpanded?: boolean; // コメントが展開されているかどうか
+  isReviewExpanded?: boolean; // レビューが展開されているかどうか
 };
 
 // コンポーネントのプロパティ
@@ -73,7 +75,29 @@ const formatReportReasons = (report: Report) => {
 };
 
 // 最近の通報一覧表示コンポーネント
-export function RecentReports({ reports }: RecentReportsProps) {
+export function RecentReports({ reports: initialReports }: RecentReportsProps) {
+  // 通報一覧の状態
+  const [reports, setReports] = useState<Report[]>(
+    initialReports.map((report: Report) => ({ 
+      ...report, 
+      isCommentExpanded: false,
+      isReviewExpanded: false 
+    }))
+  );
+  
+  // コメントの展開/折りたたみを切り替えるハンドラ
+  const toggleCommentExpand = (index: number) => {
+    const newReports = [...reports];
+    newReports[index].isCommentExpanded = !newReports[index].isCommentExpanded;
+    setReports(newReports);
+  };
+  
+  // レビューの展開/折りたたみを切り替えるハンドラ
+  const toggleReviewExpand = (index: number) => {
+    const newReports = [...reports];
+    newReports[index].isReviewExpanded = !newReports[index].isReviewExpanded;
+    setReports(newReports);
+  };
   if (reports.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
@@ -84,7 +108,7 @@ export function RecentReports({ reports }: RecentReportsProps) {
 
   return (
     <div className="space-y-4">
-      {reports.map((report) => (
+      {reports.map((report: Report, index: number) => (
         <div 
           key={report.id} 
           className="bg-white rounded-lg shadow-md p-4"
@@ -102,9 +126,19 @@ export function RecentReports({ reports }: RecentReportsProps) {
               <span className="font-semibold">通報者:</span> {report.reporter_name} (ID: {report.reporter_id})
             </div>
             {report.comment && (
-              <div className="mt-1 whitespace-pre-line">
-                <span className="font-semibold">コメント:</span> {report.comment}
-              </div>
+              <>
+                <div className={`mt-1 whitespace-pre-line ${report.isCommentExpanded ? '' : 'line-clamp-3'}`}>
+                  <span className="font-semibold">コメント:</span> {report.comment}
+                </div>
+                {report.comment.split('\n').length > 3 || report.comment.length > 150 ? (
+                  <button
+                    onClick={() => toggleCommentExpand(index)}
+                    className="text-blue-600 hover:text-blue-800 hover:underline text-sm mt-1 focus:outline-none"
+                  >
+                    {report.isCommentExpanded ? '閉じる' : '続きを読む'}
+                  </button>
+                ) : null}
+              </>
             )}
           </div>
           
@@ -136,7 +170,17 @@ export function RecentReports({ reports }: RecentReportsProps) {
                 </span>
               </div>
             </div>
-            <div className="whitespace-pre-line text-gray-700 text-sm line-clamp-3">{report.review}</div>
+            <div className={`whitespace-pre-line text-gray-700 text-sm ${report.isReviewExpanded ? '' : 'line-clamp-3'}`}>
+              {report.review}
+            </div>
+            {report.review.split('\n').length > 3 || report.review.length > 150 ? (
+              <button
+                onClick={() => toggleReviewExpand(index)}
+                className="text-blue-600 hover:text-blue-800 hover:underline text-sm mt-1 focus:outline-none"
+              >
+                {report.isReviewExpanded ? '閉じる' : '続きを読む'}
+              </button>
+            ) : null}
           </div>
         </div>
       ))}
