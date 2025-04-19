@@ -6,9 +6,9 @@ export default function Header() {
       <div className="flex gap-8 justify-center items-center">
         <ZionLogo />
       </div>
-      <h1 className="sr-only">ZEN大授業評価サイト ZEON (非公式)</h1>
+      <h1 className="sr-only">ZEN大授業評価レビューサイト ZEON (非公式)</h1>
       <p className="text-3xl lg:text-4xl !leading-tight mx-auto max-w-xl text-center">
-        <span className="font-bold">ZEN大授業評価サイト</span>
+        <span className="font-bold">ZEN大授業評価レビューサイト</span>
         <br />
         <span className="text-2xl lg:text-3xl">ZEON (非公式)</span>
       </p>
