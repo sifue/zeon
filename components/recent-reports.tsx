@@ -30,6 +30,7 @@ type Report = {
   quarter: string;
   evaluation_created_at: string;
   useful_count: number;
+  code: string; // 科目コード
   isCommentExpanded?: boolean; // コメントが展開されているかどうか
   isReviewExpanded?: boolean; // レビューが展開されているかどうか
 };
@@ -146,7 +147,7 @@ export function RecentReports({ reports: initialReports }: RecentReportsProps) {
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3">
               <div>
                 <Link 
-                  href={`/subject/${report.evaluation_id}`}
+                  href={`/subject/${report.code}`}
                   className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
                 >
                   {report.subject_name}
