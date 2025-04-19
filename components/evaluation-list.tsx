@@ -246,7 +246,7 @@ export function EvaluationList({ evaluations: initialEvaluations, isAdmin = fals
 
   if (evaluations.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
+      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
         まだレビューがありません。最初のレビューを投稿してみませんか？
       </div>
     );
@@ -274,10 +274,10 @@ export function EvaluationList({ evaluations: initialEvaluations, isAdmin = fals
       {evaluations.map((evaluation, index) => (
         <div 
           key={evaluation.id} 
-          className={`bg-white rounded-lg shadow-md p-6 ${evaluation.is_invisible ? 'opacity-70 border-2 border-red-300' : ''}`}
+          className={`bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 ${evaluation.is_invisible ? 'opacity-70 border-2 border-red-300 dark:border-red-700' : ''}`}
         >
           {evaluation.is_invisible && (
-            <div className="bg-red-100 text-red-800 px-3 py-1 rounded-md mb-3 text-sm font-medium flex items-center">
+            <div className="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300 px-3 py-1 rounded-md mb-3 text-sm font-medium flex items-center">
               <EyeOff size={16} className="mr-2" />
               この評価は運営チームにより非表示に設定されています
             </div>
@@ -286,24 +286,24 @@ export function EvaluationList({ evaluations: initialEvaluations, isAdmin = fals
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <StarRating rating={evaluation.evaluation} />
-                <span className="text-gray-500">
+                <span className="text-gray-500 dark:text-gray-400">
                   {evaluation.year}年度 {evaluation.quarter}
                 </span>
               </div>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 {formatEvaluatorName(evaluation)}さんが{formatDate(evaluation.created_at)}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm text-gray-500 mr-1">
+              <span className="text-sm text-gray-500 dark:text-gray-400 mr-1">
                 役に立った: {evaluation.useful_count}
               </span>
               <div className="flex flex-wrap gap-2">
                 <button
                   className={`flex items-center gap-1 px-2 py-1 rounded-md ${
                     evaluation.is_useful 
-                      ? 'text-white bg-blue-500 hover:bg-blue-600' 
-                      : 'text-gray-500 hover:text-blue-500 hover:bg-gray-100'
+                      ? 'text-white bg-blue-500 hover:bg-blue-600 dark:bg-blue-700 dark:hover:bg-blue-800' 
+                      : 'text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
                   onClick={() => handleUsefulClick(evaluation.id, index)}
                   aria-label="役に立った"
@@ -311,7 +311,7 @@ export function EvaluationList({ evaluations: initialEvaluations, isAdmin = fals
                   <ThumbsUp size={16} />
                 </button>
                 <button
-                  className="text-gray-500 hover:text-red-500 hover:bg-gray-100 px-2 py-1 rounded-md flex items-center"
+                  className="text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-2 py-1 rounded-md flex items-center"
                   onClick={() => setReportModal({ isOpen: true, evaluationId: evaluation.id })}
                   aria-label="通報"
                 >
@@ -322,8 +322,8 @@ export function EvaluationList({ evaluations: initialEvaluations, isAdmin = fals
                     <button
                       className={`flex items-center gap-1 px-2 py-1 rounded-md ${
                         evaluation.is_invisible 
-                          ? 'text-green-500 hover:text-green-600 hover:bg-gray-100' 
-                          : 'text-gray-500 hover:text-red-500 hover:bg-gray-100'
+                          ? 'text-green-500 dark:text-green-400 hover:text-green-600 dark:hover:text-green-300 hover:bg-gray-100 dark:hover:bg-gray-700' 
+                          : 'text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                       }`}
                       onClick={() => handleVisibilityToggle(evaluation, index)}
                       aria-label={evaluation.is_invisible ? '表示に戻す' : '非表示にする'}
@@ -332,7 +332,7 @@ export function EvaluationList({ evaluations: initialEvaluations, isAdmin = fals
                       {evaluation.is_invisible ? <Eye size={16} /> : <EyeOff size={16} />}
                     </button>
                     <button
-                      className="text-gray-500 hover:text-blue-500 hover:bg-gray-100 px-2 py-1 rounded-md flex items-center"
+                      className="text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-2 py-1 rounded-md flex items-center"
                       onClick={() => handleToggleReports(index)}
                       aria-label={evaluation.show_reports ? '通報一覧を閉じる' : '通報一覧を表示'}
                       title={evaluation.show_reports ? '通報一覧を閉じる' : '通報一覧を表示'}
@@ -344,13 +344,13 @@ export function EvaluationList({ evaluations: initialEvaluations, isAdmin = fals
               </div>
             </div>
           </div>
-          <div className={`whitespace-pre-line text-gray-700 ${evaluation.isReviewExpanded ? '' : 'line-clamp-3'}`}>
+          <div className={`whitespace-pre-line text-gray-700 dark:text-gray-300 ${evaluation.isReviewExpanded ? '' : 'line-clamp-3'}`}>
             {evaluation.review}
           </div>
           {evaluation.review.split('\n').length > 3 || evaluation.review.length > 150 ? (
             <button
               onClick={() => toggleReviewExpand(index)}
-              className="text-blue-600 hover:text-blue-800 hover:underline text-sm mt-1 focus:outline-none"
+              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline text-sm mt-1 focus:outline-none"
             >
               {evaluation.isReviewExpanded ? '閉じる' : '続きを読む'}
             </button>

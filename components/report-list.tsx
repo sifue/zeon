@@ -101,18 +101,18 @@ export function ReportList({ evaluationId }: ReportListProps) {
   
   if (isLoading) {
     return (
-      <div className="mt-4 p-4 bg-gray-50 rounded-md border border-gray-200">
-        <h4 className="text-sm font-semibold text-gray-700 mb-2">通報一覧</h4>
-        <div className="text-sm text-gray-500">通報一覧を読み込み中...</div>
+      <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700">
+        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">通報一覧</h4>
+        <div className="text-sm text-gray-500 dark:text-gray-400">通報一覧を読み込み中...</div>
       </div>
     );
   }
   
   if (error) {
     return (
-      <div className="mt-4 p-4 bg-gray-50 rounded-md border border-gray-200">
-        <h4 className="text-sm font-semibold text-gray-700 mb-2">通報一覧</h4>
-        <div className="text-sm text-red-500">{error}</div>
+      <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700">
+        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">通報一覧</h4>
+        <div className="text-sm text-red-500 dark:text-red-400">{error}</div>
       </div>
     );
   }
@@ -120,39 +120,39 @@ export function ReportList({ evaluationId }: ReportListProps) {
   // 通報一覧が空の場合のメッセージを表示
   if (reports.length === 0) {
     return (
-      <div className="mt-4 p-4 bg-gray-50 rounded-md border border-gray-200">
-        <h4 className="text-sm font-semibold text-gray-700 mb-2">通報一覧</h4>
-        <div className="text-sm text-gray-500">この評価に対する通報はありません</div>
+      <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700">
+        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">通報一覧</h4>
+        <div className="text-sm text-gray-500 dark:text-gray-400">この評価に対する通報はありません</div>
       </div>
     );
   }
   
   return (
-    <div className="mt-4 p-4 bg-gray-50 rounded-md border border-gray-200">
-      <h4 className="text-sm font-semibold text-gray-700 mb-2">通報一覧</h4>
+    <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700">
+      <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">通報一覧</h4>
       <div className="space-y-3">
         {reports.map((report, index) => (
-          <div key={report.id} className="bg-gray-50 p-3 rounded-md border border-gray-200">
+          <div key={report.id} className="bg-gray-50 dark:bg-gray-700 p-3 rounded-md border border-gray-200 dark:border-gray-600">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 mb-2">
-              <div className="text-sm font-medium">
+              <div className="text-sm font-medium dark:text-gray-300">
                 {report.reporter_name}さん
               </div>
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-gray-500 dark:text-gray-400">
                 {formatDate(report.created_at)}
               </div>
             </div>
-            <div className="text-sm mb-2">
+            <div className="text-sm mb-2 dark:text-gray-300">
               <span className="font-medium">理由:</span> {formatReportReasons(report)}
             </div>
             {report.comment && (
               <>
-                <div className={`text-sm ${report.isCommentExpanded ? '' : 'line-clamp-3'}`}>
+                <div className={`text-sm dark:text-gray-300 ${report.isCommentExpanded ? '' : 'line-clamp-3'}`}>
                   <span className="font-medium">コメント:</span> {report.comment}
                 </div>
                 {report.comment.split('\n').length > 3 || report.comment.length > 150 ? (
                   <button
                     onClick={() => toggleCommentExpand(index)}
-                    className="text-blue-600 hover:text-blue-800 hover:underline text-sm mt-1 focus:outline-none"
+                    className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline text-sm mt-1 focus:outline-none"
                   >
                     {report.isCommentExpanded ? '閉じる' : '続きを読む'}
                   </button>
