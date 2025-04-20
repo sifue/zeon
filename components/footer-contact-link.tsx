@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { createClient } from '@/utils/supabase/server';
+import FooterContactDialog from './footer-contact-dialog';
 
 export default async function FooterContactLink() {
   const supabase = await createClient();
@@ -9,9 +9,5 @@ export default async function FooterContactLink() {
     return null;
   }
   
-  return (
-    <Link href="mailto:soichiro_yoshimura@zen.ac.jp" className="text-xs hover:underline">
-      お問い合わせ
-    </Link>
-  );
+  return <FooterContactDialog />;
 }
