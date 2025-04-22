@@ -12,6 +12,7 @@ type Subject = {
   name: string;
   faculties: any; // JSONBフィールド
   enrollment_grade: number;
+  quarters: string[]; // クォーター情報を追加
 };
 
 // 評価統計の型定義
@@ -50,20 +51,77 @@ const formatFaculties = (faculties: any): string => {
   return facultyNames;
 };
 
+// クォーター情報を表示するヘルパー関数
+const formatQuarters = (quarters: any): string => {
+  if (!quarters || !Array.isArray(quarters) || quarters.length === 0) return '未設定';
+  
+  return quarters.join(', ');
+};
+
+// クォーターの比較関数（クォーターの順序を定義）
+const compareQuarters = (a: string[], b: string[]): number => {
+  // クォーターがない場合は後ろに配置
+  if (!a || !Array.isArray(a) || a.length === 0) return 1;
+  if (!b || !Array.isArray(b) || b.length === 0) return -1;
+  
+  // 最初のクォーターで比較
+  const quarterOrder: Record<string, number> = {
+    '1Q': 1,
+    '2Q': 2,
+    '3Q': 3,
+    '4Q': 4
+  };
+  
+  const aFirstQuarter = a[0];
+  const bFirstQuarter = b[0];
+  
+  const aOrder = quarterOrder[aFirstQuarter] || 999;
+  const bOrder = quarterOrder[bFirstQuarter] || 999;
+  
+  return aOrder - bOrder;
+};
+
+// 科目をソートする関数
+const sortSubjects = (subjects: Subject[]): Subject[] => {
+  return [...subjects].sort((a, b) => {
+    // まず年次でソート
+    if (a.enrollment_grade !== b.enrollment_grade) {
+      return a.enrollment_grade - b.enrollment_grade;
+    }
+    
+    // 次にクォーターでソート
+    const quarterCompare = compareQuarters(a.quarters, b.quarters);
+    if (quarterCompare !== 0) {
+      return quarterCompare;
+    }
+    
+    // 最後にコードでソート
+    return a.code.localeCompare(b.code);
+  });
+};
+
 // 現在のタブに応じた科目リストを取得する関数
 const getSubjectsByTab = (tab: TabType, allSubjects: SubjectListProps['allSubjects']): Subject[] => {
+  let subjects;
   switch (tab) {
     case 1:
-      return allSubjects.grade1;
+      subjects = allSubjects.grade1;
+      break;
     case 2:
-      return allSubjects.grade2;
+      subjects = allSubjects.grade2;
+      break;
     case 3:
-      return allSubjects.grade3;
+      subjects = allSubjects.grade3;
+      break;
     case 4:
-      return allSubjects.grade4;
+      subjects = allSubjects.grade4;
+      break;
     default:
-      return allSubjects.grade1;
+      subjects = allSubjects.grade1;
   }
+  
+  // 科目をソート: 年次 > クォーター > コード の順
+  return sortSubjects(subjects);
 };
 
 // 科目一覧表示コンポーネント
@@ -180,6 +238,9 @@ export function SubjectList({ allSubjects, evaluationStats }: SubjectListProps) 
                   <div className="text-sm text-gray-600 mt-1">
                     教員: {formatFaculties(subject.faculties)}
                   </div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    クォーター: {formatQuarters(subject.quarters)}
+                  </div>
                   <div className="flex justify-between items-center mt-2">
                     <div className="text-sm text-gray-500">
                       {subject.enrollment_grade}年次
@@ -205,14 +266,15 @@ export function SubjectList({ allSubjects, evaluationStats }: SubjectListProps) 
       {/* デスクトップ表示用のテーブルレイアウト */}
       <div className="hidden sm:block">
         <Table>
-          <TableCaption>科目一覧（想定年次順 {`>`} 科目コード順）</TableCaption>
+          <TableCaption>科目一覧（想定年次順 {`>`} クォーター順 {`>`} 科目コード順）</TableCaption>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[40%] min-w-[250px]">科目名</TableHead>
-              <TableHead className="w-[30%] min-w-[150px]">教員</TableHead>
+              <TableHead className="w-[35%] min-w-[200px]">科目名</TableHead>
+              <TableHead className="w-[25%] min-w-[120px]">教員</TableHead>
               <TableHead className="w-[10%] text-center">年次</TableHead>
+              <TableHead className="w-[15%] min-w-[100px]">クォーター</TableHead>
               <TableHead className="w-[10%] text-center">評価</TableHead>
-              <TableHead className="w-[10%] text-center">件数</TableHead>
+              <TableHead className="w-[5%] text-center">件数</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -239,6 +301,7 @@ export function SubjectList({ allSubjects, evaluationStats }: SubjectListProps) 
                     </TableCell>
                     <TableCell className="whitespace-normal">{formatFaculties(subject.faculties)}</TableCell>
                     <TableCell className="text-center">{subject.enrollment_grade}</TableCell>
+                    <TableCell className="whitespace-normal">{formatQuarters(subject.quarters)}</TableCell>
                     <TableCell className="text-center">
                       {stats.count > 0 ? (
                         <StarRating rating={stats.average} />

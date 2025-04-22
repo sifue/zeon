@@ -19,7 +19,7 @@ export const getSubjects = async (enrollmentGrade?: number) => {
   // クエリを作成
   let query = supabase
     .from('subjects')
-    .select('code, name, faculties, enrollment_grade')
+    .select('code, name, faculties, enrollment_grade, quarters')
     .order('enrollment_grade', { ascending: true })
     .order('code', { ascending: true });
   
