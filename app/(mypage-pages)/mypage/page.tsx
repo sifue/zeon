@@ -4,6 +4,8 @@ import { UserReports } from '@/components/user-reports';
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import { checkBannedUser } from '@/app/check-banned';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 
 export default async function MyPage() {
   const supabase = await createClient();
@@ -36,6 +38,15 @@ export default async function MyPage() {
 
   return (
     <div className="flex-1 w-full flex flex-col gap-4 pt-2 pb-4 px-2 sm:px-4 md:pt-3 md:pb-8 md:px-8">
+      {/* 戻るリンク */}
+      <Link 
+        href="/dashboard" 
+        className="flex items-center text-blue-600 hover:text-blue-800"
+      >
+        <ArrowLeft size={16} className="mr-1" />
+        ダッシュボードに戻る
+      </Link>
+      
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold">マイページ</h1>
       </div>
