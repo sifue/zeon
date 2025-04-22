@@ -48,11 +48,16 @@ export default async function AuthButton() {
   return user ? (
     <div className="flex flex-col sm:flex-row items-center gap-4">
       <span className="text-sm">こんにちは、{user.email}さん！</span>
-      <form action={signOutAction}>
-        <Button type="submit" variant={'outline'} className="w-full sm:w-auto">
-          ログアウト
+      <div className="flex flex-col sm:flex-row gap-2">
+        <Button asChild size="sm" variant={'default'} className="w-full sm:w-auto">
+          <Link href="/mypage">マイページ</Link>
         </Button>
-      </form>
+        <form action={signOutAction}>
+          <Button type="submit" variant={'outline'} className="w-full sm:w-auto">
+            ログアウト
+          </Button>
+        </form>
+      </div>
     </div>
   ) : (
     <div className="flex flex-col sm:flex-row gap-2">

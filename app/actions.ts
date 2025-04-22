@@ -19,7 +19,7 @@ export const getSubjects = async (enrollmentGrade?: number) => {
   // クエリを作成
   let query = supabase
     .from('subjects')
-    .select('code, name, faculties, enrollment_grade')
+    .select('code, name, faculties, enrollment_grade, quarters')
     .order('enrollment_grade', { ascending: true })
     .order('code', { ascending: true });
   
@@ -1000,6 +1000,218 @@ export const getReportsBySubjectCode = async (code: string) => {
   });
   
   return reportsWithUsers;
+};
+
+// ユーザーの評価一覧を取得する
+export const getUserEvaluations = async () => {
+  const supabase = await createClient();
+  
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  
+  if (!user) {
+    return [];
+  }
+  
+  // ユーザーの評価を取得
+  const { data: evaluations, error } = await supabase
+    .from('evaluations')
+    .select(`
+      id,
+      code,
+      evaluator,
+      evaluation,
+      review,
+      year,
+      quarter,
+      created_at,
+      updated_at
+    `)
+    .eq('evaluator', user.id)
+    .order('updated_at', { ascending: false });
+  
+  if (error || !evaluations) {
+    return [];
+  }
+  
+  // 評価にダミーのユーザー情報と非表示状態を追加
+  const evaluationsWithUsers = evaluations.map(evaluation => {
+    return {
+      ...evaluation,
+      users: {
+        email: `user-${evaluation.evaluator.substring(0, 8)}@example.com`,
+        raw_user_meta_data: {
+          name: `ユーザー${evaluation.evaluator.substring(0, 4)}`
+        }
+      }
+    };
+  });
+  
+  // 科目情報を取得
+  const { data: subjects } = await supabase
+    .from('subjects')
+    .select('code, name, faculties');
+  
+  // 科目情報をマッピング
+  const subjectMap: Record<string, { name: string; faculties: any }> = {};
+  if (subjects) {
+    subjects.forEach(subject => {
+      subjectMap[subject.code] = {
+        name: subject.name,
+        faculties: subject.faculties
+      };
+    });
+  }
+  
+  // 役に立った数を取得
+  const { data: usefuls } = await supabase
+    .from('usefuls')
+    .select('evaluation_id')
+    .in('evaluation_id', evaluationsWithUsers.map(e => e.id));
+  
+  // 役に立った数をマッピング
+  const usefulCounts: Record<number, number> = {};
+  if (usefuls) {
+    // 各評価IDごとに役に立った数をカウント
+    usefuls.forEach((item: { evaluation_id: number }) => {
+      if (!usefulCounts[item.evaluation_id]) {
+        usefulCounts[item.evaluation_id] = 0;
+      }
+      usefulCounts[item.evaluation_id]++;
+    });
+  }
+  
+  // 評価に役に立った数と科目情報を追加
+  const evaluationsWithDetails = evaluationsWithUsers.map(evaluation => {
+    const subject = subjectMap[evaluation.code] || { name: '不明', faculties: [] };
+    
+    return {
+      ...evaluation,
+      subject_name: subject.name,
+      faculties: subject.faculties,
+      useful_count: usefulCounts[evaluation.id] || 0
+    };
+  });
+  
+  return evaluationsWithDetails;
+};
+
+// ユーザーの通報一覧を取得する
+export const getUserReports = async () => {
+  const supabase = await createClient();
+  
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  
+  if (!user) {
+    return [];
+  }
+  
+  // ユーザーの通報を取得
+  const { data: reports, error } = await supabase
+    .from('reports')
+    .select(`
+      id,
+      evaluation_id,
+      reporter,
+      is_irrelevant,
+      is_inappropriate,
+      is_fake,
+      is_other,
+      comment,
+      created_at,
+      evaluations:evaluation_id(id, evaluator, code, evaluation, review, year, quarter, created_at)
+    `)
+    .eq('reporter', user.id)
+    .order('created_at', { ascending: false });
+  
+  if (error || !reports) {
+    return [];
+  }
+  
+  // 評価IDの一覧を取得
+  const evaluationIds = reports.map(report => report.evaluation_id);
+  
+  // 役に立った数を取得
+  const { data: usefuls } = await supabase
+    .from('usefuls')
+    .select('evaluation_id')
+    .in('evaluation_id', evaluationIds);
+  
+  // 役に立った数をマッピング
+  const usefulCounts: Record<number, number> = {};
+  if (usefuls) {
+    usefuls.forEach((item: { evaluation_id: number }) => {
+      if (!usefulCounts[item.evaluation_id]) {
+        usefulCounts[item.evaluation_id] = 0;
+      }
+      usefulCounts[item.evaluation_id]++;
+    });
+  }
+  
+  // 科目コードの一覧を取得
+  const subjectCodes = new Set<string>();
+  reports.forEach(report => {
+    const evaluation = report.evaluations as unknown as { code: string };
+    if (evaluation && evaluation.code) {
+      subjectCodes.add(evaluation.code);
+    }
+  });
+  
+  // 科目情報を取得
+  const { data: subjects } = await supabase
+    .from('subjects')
+    .select('code, name, faculties')
+    .in('code', Array.from(subjectCodes));
+  
+  // 科目情報をマッピング
+  const subjectMap: Record<string, { name: string; faculties: any }> = {};
+  if (subjects) {
+    subjects.forEach(subject => {
+      subjectMap[subject.code] = {
+        name: subject.name,
+        faculties: subject.faculties
+      };
+    });
+  }
+  
+  // 通報に詳細情報を追加
+  const reportsWithDetails = reports.map(report => {
+    // evaluationsは外部キー参照で取得したオブジェクト
+    const evaluation = report.evaluations as unknown as { 
+      id: number; 
+      evaluator: string; 
+      code: string;
+      evaluation: number;
+      review: string;
+      year: number;
+      quarter: string;
+      created_at: string;
+    };
+    
+    const subject = evaluation && evaluation.code ? subjectMap[evaluation.code] : { name: '不明', faculties: [] };
+    
+    return {
+      ...report,
+      reporter_name: `通報者${report.reporter.substring(0, 4)}`,
+      reporter_id: report.reporter,
+      evaluator_name: evaluation ? `ユーザー${evaluation.evaluator.substring(0, 4)}` : '不明',
+      evaluator_id: evaluation ? evaluation.evaluator : '',
+      subject_name: subject ? subject.name : '不明',
+      faculties: subject ? subject.faculties : [],
+      evaluation: evaluation ? evaluation.evaluation : 0,
+      review: evaluation ? evaluation.review : '',
+      year: evaluation ? evaluation.year : 0,
+      quarter: evaluation ? evaluation.quarter : '',
+      evaluation_created_at: evaluation ? evaluation.created_at : '',
+      useful_count: usefulCounts[report.evaluation_id] || 0,
+      code: evaluation ? evaluation.code : '' // 科目コードを追加
+    };
+  });
+  
+  return reportsWithDetails;
 };
 
 // 最近の通報を取得する（ダッシュボード用）
