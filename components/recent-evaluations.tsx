@@ -88,39 +88,7 @@ const formatDate = (dateString: string) => {
   }
 };
 
-// ユーザーが「役に立った」を押したかどうかを確認する関数
-const checkUserUseful = async (evaluationId: number) => {
-  // この関数は将来的に実装する予定
-  // 現在はローカルストレージを使用して簡易的に実装
-  const usefulItems = localStorage.getItem('useful_items');
-  if (usefulItems) {
-    const items = JSON.parse(usefulItems);
-    return items.includes(evaluationId);
-  }
-  return false;
-};
-
-// 「役に立った」の状態を保存する関数
-const saveUserUseful = (evaluationId: number, isUseful: boolean) => {
-  const usefulItems = localStorage.getItem('useful_items');
-  let items: number[] = [];
-  
-  if (usefulItems) {
-    items = JSON.parse(usefulItems);
-  }
-  
-  if (isUseful) {
-    // 追加
-    if (!items.includes(evaluationId)) {
-      items.push(evaluationId);
-    }
-  } else {
-    // 削除
-    items = items.filter(id => id !== evaluationId);
-  }
-  
-  localStorage.setItem('useful_items', JSON.stringify(items));
-};
+import { getUserUsefulEvaluations, checkUserUseful } from '@/app/actions';
 
 // 最近の評価一覧表示コンポーネント
 export function RecentEvaluations({ evaluations: initialEvaluations, isAdmin = false }: RecentEvaluationsProps) {
@@ -139,12 +107,19 @@ export function RecentEvaluations({ evaluations: initialEvaluations, isAdmin = f
   useEffect(() => {
     const checkUsefulStatus = async () => {
       if (typeof window !== 'undefined') {
-        const updatedEvaluations = await Promise.all(
-          initialEvaluations.map(async (evaluation) => {
-            const isUseful = await checkUserUseful(evaluation.id);
-            return { ...evaluation, is_useful: isUseful };
-          })
-        );
+        // 評価IDのリストを取得
+        const evaluationIds = initialEvaluations.map(evaluation => evaluation.id);
+        
+        // ユーザーが「役に立った」を押した評価IDのセットを取得
+        const usefulSet = await getUserUsefulEvaluations(evaluationIds);
+        
+        // 評価一覧を更新
+        const updatedEvaluations = initialEvaluations.map(evaluation => ({
+          ...evaluation,
+          is_useful: usefulSet.has(evaluation.id),
+          isExpanded: false // 初期状態ではレビューを折りたたむ
+        }));
+        
         setEvaluations(updatedEvaluations);
       }
     };
@@ -181,8 +156,6 @@ export function RecentEvaluations({ evaluations: initialEvaluations, isAdmin = f
         // 「役に立った」の数を更新
         evaluation.useful_count += newIsUseful ? 1 : -1;
         
-        // ローカルストレージに保存
-        saveUserUseful(evaluationId, newIsUseful);
         
         setEvaluations(newEvaluations);
       }
