@@ -475,6 +475,53 @@ export async function deleteEvaluationAction(formData: FormData) {
   }
 }
 
+// 特定の評価に対してユーザーが「役に立った」を押したかどうかを確認する
+export const checkUserUseful = async (evaluationId: number) => {
+  const supabase = await createClient();
+  
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  
+  if (!user) {
+    return false;
+  }
+  
+  const { data } = await supabase
+    .from('usefuls')
+    .select('id')
+    .eq('evaluation_id', evaluationId)
+    .eq('uid', user.id)
+    .maybeSingle();
+  
+  return !!data;
+};
+
+// 評価IDのリストを受け取り、ユーザーが「役に立った」を押した評価IDのセットを返す
+export const getUserUsefulEvaluations = async (evaluationIds: number[]) => {
+  const supabase = await createClient();
+  
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  
+  if (!user || evaluationIds.length === 0) {
+    return new Set<number>();
+  }
+  
+  const { data } = await supabase
+    .from('usefuls')
+    .select('evaluation_id')
+    .eq('uid', user.id)
+    .in('evaluation_id', evaluationIds);
+  
+  if (!data) {
+    return new Set<number>();
+  }
+  
+  return new Set(data.map(item => item.evaluation_id));
+};
+
 // 役に立ったボタンを押す/取り消す
 export const toggleUseful = async (evaluationId: number) => {
   const supabase = await createClient();
