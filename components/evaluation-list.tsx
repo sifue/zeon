@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useTextClamped } from '@/utils/use-text-clamped';
 import { StarRating } from '@/components/star-rating';
 import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale';
@@ -31,6 +32,7 @@ type Evaluation = {
   is_invisible?: boolean; // 評価が非表示かどうか
   show_reports?: boolean; // 通報一覧の表示/非表示
   isReviewExpanded?: boolean; // レビューが展開されているかどうか
+  isTextClamped?: boolean; // テキストが切り詰められているかどうか
 };
 
 // コンポーネントのプロパティ
@@ -313,17 +315,30 @@ export function EvaluationList({ evaluations: initialEvaluations, isAdmin = fals
               </div>
             </div>
           </div>
-          <div className={`whitespace-pre-line text-gray-700 dark:text-gray-300 ${evaluation.isReviewExpanded ? '' : 'line-clamp-3'}`}>
+          <div 
+            ref={(el) => {
+              // 要素がマウントされたときに、テキストが切り詰められているかどうかを確認
+              if (el && !evaluation.isReviewExpanded) {
+                const isTextClamped = el.scrollHeight > el.clientHeight;
+                if (isTextClamped !== evaluation.isTextClamped) {
+                  const newEvaluations = [...evaluations];
+                  newEvaluations[index].isTextClamped = isTextClamped;
+                  setEvaluations(newEvaluations);
+                }
+              }
+            }}
+            className={`whitespace-pre-line text-gray-700 dark:text-gray-300 ${evaluation.isReviewExpanded ? '' : 'line-clamp-3'}`}
+          >
             {evaluation.review}
           </div>
-          {evaluation.review.split('\n').length > 3 || evaluation.review.length > 150 ? (
+          {(evaluation.isTextClamped || evaluation.isReviewExpanded) && (
             <button
               onClick={() => toggleReviewExpand(index)}
               className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline text-sm mt-1 focus:outline-none"
             >
               {evaluation.isReviewExpanded ? '閉じる' : '続きを読む'}
             </button>
-          ) : null}
+          )}
           
           {/* 管理者向け通報一覧 */}
           {isAdmin && evaluation.show_reports && (

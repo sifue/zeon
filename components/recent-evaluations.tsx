@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StarRating } from '@/components/star-rating';
 import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale';
@@ -32,6 +32,7 @@ type Evaluation = {
   is_useful?: boolean; // ユーザーが「役に立った」を押したかどうか
   is_invisible?: boolean; // 評価が非表示かどうか
   isExpanded?: boolean; // レビューが展開されているかどうか
+  isTextClamped?: boolean; // テキストが切り詰められているかどうか
 };
 
 // コンポーネントのプロパティ
@@ -292,17 +293,30 @@ export function RecentEvaluations({ evaluations: initialEvaluations, isAdmin = f
               </div>
             </div>
           </div>
-          <div className={`whitespace-pre-line text-gray-700 dark:text-gray-300 text-sm ${evaluation.isExpanded ? '' : 'line-clamp-3'}`}>
+          <div 
+            ref={(el) => {
+              // 要素がマウントされたときに、テキストが切り詰められているかどうかを確認
+              if (el && !evaluation.isExpanded) {
+                const isTextClamped = el.scrollHeight > el.clientHeight;
+                if (isTextClamped !== evaluation.isTextClamped) {
+                  const newEvaluations = [...evaluations];
+                  newEvaluations[index].isTextClamped = isTextClamped;
+                  setEvaluations(newEvaluations);
+                }
+              }
+            }}
+            className={`whitespace-pre-line text-gray-700 dark:text-gray-300 text-sm ${evaluation.isExpanded ? '' : 'line-clamp-3'}`}
+          >
             {evaluation.review}
           </div>
-          {evaluation.review.split('\n').length > 3 || evaluation.review.length > 150 ? (
+          {(evaluation.isTextClamped || evaluation.isExpanded) && (
             <button
               onClick={() => toggleReviewExpand(index)}
               className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline text-sm mt-1 focus:outline-none"
             >
               {evaluation.isExpanded ? '閉じる' : '続きを読む'}
             </button>
-          ) : null}
+          )}
         </div>
       ))}
       
