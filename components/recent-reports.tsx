@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { StarRating } from '@/components/star-rating';
 import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale';
@@ -33,6 +33,8 @@ type Report = {
   code: string; // 科目コード
   isCommentExpanded?: boolean; // コメントが展開されているかどうか
   isReviewExpanded?: boolean; // レビューが展開されているかどうか
+  isCommentClamped?: boolean; // コメントが切り詰められているかどうか
+  isReviewClamped?: boolean; // レビューが切り詰められているかどうか
 };
 
 // コンポーネントのプロパティ
@@ -128,17 +130,30 @@ export function RecentReports({ reports: initialReports }: RecentReportsProps) {
             </div>
             {report.comment && (
               <>
-                <div className={`mt-1 whitespace-pre-line ${report.isCommentExpanded ? '' : 'line-clamp-3'}`}>
+                <div 
+                  ref={(el) => {
+                    // 要素がマウントされたときに、テキストが切り詰められているかどうかを確認
+                    if (el && !report.isCommentExpanded) {
+                      const isTextClamped = el.scrollHeight > el.clientHeight;
+                      if (isTextClamped !== report.isCommentClamped) {
+                        const newReports = [...reports];
+                        newReports[index].isCommentClamped = isTextClamped;
+                        setReports(newReports);
+                      }
+                    }
+                  }}
+                  className={`mt-1 whitespace-pre-line ${report.isCommentExpanded ? '' : 'line-clamp-3'}`}
+                >
                   <span className="font-semibold">コメント:</span> {report.comment}
                 </div>
-                {report.comment.split('\n').length > 3 || report.comment.length > 150 ? (
+                {(report.isCommentClamped || report.isCommentExpanded) && (
                   <button
                     onClick={() => toggleCommentExpand(index)}
                     className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline text-sm mt-1 focus:outline-none"
                   >
                     {report.isCommentExpanded ? '閉じる' : '続きを読む'}
                   </button>
-                ) : null}
+                )}
               </>
             )}
           </div>
@@ -171,17 +186,30 @@ export function RecentReports({ reports: initialReports }: RecentReportsProps) {
                 </span>
               </div>
             </div>
-            <div className={`whitespace-pre-line text-gray-700 dark:text-gray-300 text-sm ${report.isReviewExpanded ? '' : 'line-clamp-3'}`}>
+            <div 
+              ref={(el) => {
+                // 要素がマウントされたときに、テキストが切り詰められているかどうかを確認
+                if (el && !report.isReviewExpanded) {
+                  const isTextClamped = el.scrollHeight > el.clientHeight;
+                  if (isTextClamped !== report.isReviewClamped) {
+                    const newReports = [...reports];
+                    newReports[index].isReviewClamped = isTextClamped;
+                    setReports(newReports);
+                  }
+                }
+              }}
+              className={`whitespace-pre-line text-gray-700 dark:text-gray-300 text-sm ${report.isReviewExpanded ? '' : 'line-clamp-3'}`}
+            >
               {report.review}
             </div>
-            {report.review.split('\n').length > 3 || report.review.length > 150 ? (
+            {(report.isReviewClamped || report.isReviewExpanded) && (
               <button
                 onClick={() => toggleReviewExpand(index)}
                 className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline text-sm mt-1 focus:outline-none"
               >
                 {report.isReviewExpanded ? '閉じる' : '続きを読む'}
               </button>
-            ) : null}
+            )}
           </div>
         </div>
       ))}

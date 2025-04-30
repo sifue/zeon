@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { getReportByEvaluationId } from '@/app/actions';
@@ -18,6 +18,7 @@ type Report = {
   comment: string;
   created_at: string;
   isCommentExpanded?: boolean; // コメントが展開されているかどうか
+  isTextClamped?: boolean; // テキストが切り詰められているかどうか
 };
 
 // コンポーネントのプロパティ
@@ -146,17 +147,30 @@ export function ReportList({ evaluationId }: ReportListProps) {
             </div>
             {report.comment && (
               <>
-                <div className={`text-sm dark:text-gray-300 ${report.isCommentExpanded ? '' : 'line-clamp-3'}`}>
-                  <span className="font-medium">コメント:</span> {report.comment}
+                <div 
+                  ref={(el) => {
+                    // 要素がマウントされたときに、テキストが切り詰められているかどうかを確認
+                    if (el && !report.isCommentExpanded) {
+                      const isTextClamped = el.scrollHeight > el.clientHeight;
+                      if (isTextClamped !== report.isTextClamped) {
+                        const newReports = [...reports];
+                        newReports[index].isTextClamped = isTextClamped;
+                        setReports(newReports);
+                      }
+                    }
+                  }}
+                  className={`text-sm dark:text-gray-300 ${report.isCommentExpanded ? '' : 'line-clamp-3'}`}
+                >
+                  <span className="font-semibold">コメント:</span> {report.comment}
                 </div>
-                {report.comment.split('\n').length > 3 || report.comment.length > 150 ? (
+                {(report.isTextClamped || report.isCommentExpanded) && (
                   <button
                     onClick={() => toggleCommentExpand(index)}
                     className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline text-sm mt-1 focus:outline-none"
                   >
                     {report.isCommentExpanded ? '閉じる' : '続きを読む'}
                   </button>
-                ) : null}
+                )}
               </>
             )}
           </div>
