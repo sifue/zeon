@@ -6,7 +6,7 @@ import { StarRating } from '@/components/star-rating';
 import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { toggleUsefulAction, toggleEvaluationVisibilityAction, checkEvaluationInvisible } from '@/app/actions';
-import { ThumbsUp, Flag, EyeOff, Eye, ChevronDown, ChevronUp } from 'lucide-react';
+import { ThumbsUp, Flag, EyeOff, Eye, ChevronDown, ChevronUp, Share } from 'lucide-react';
 import { ReportForm } from '@/components/report-form';
 import { ReportList } from '@/components/report-list';
 
@@ -39,6 +39,7 @@ type Evaluation = {
 interface EvaluationListProps {
   evaluations: Evaluation[];
   isAdmin?: boolean; // 管理者かどうか
+  highlightedEvaluationId?: number; // 強調表示する評価ID
 }
 
 // 通報モーダルの状態
@@ -78,7 +79,13 @@ const formatDate = (dateString: string) => {
 import { getUserUsefulEvaluations, checkUserUseful } from '@/app/actions';
 
 // レビュー一覧表示コンポーネント
-export function EvaluationList({ evaluations: initialEvaluations, isAdmin = false }: EvaluationListProps) {
+export function EvaluationList({ 
+  evaluations: initialEvaluations, 
+  isAdmin = false,
+  highlightedEvaluationId 
+}: EvaluationListProps) {
+  // 強調表示する評価へのref
+  const highlightedEvaluationRef = useRef<HTMLDivElement>(null);
   // 評価一覧の状態
   const [evaluations, setEvaluations] = useState<Evaluation[]>(initialEvaluations);
   
@@ -131,6 +138,27 @@ export function EvaluationList({ evaluations: initialEvaluations, isAdmin = fals
     
     checkUsefulStatus();
   }, [initialEvaluations]);
+  
+  // 強調表示する評価が存在する場合、コンポーネントがマウントされた後にスクロール
+  useEffect(() => {
+    if (highlightedEvaluationId && highlightedEvaluationRef.current) {
+      // スムーズにスクロール
+      highlightedEvaluationRef.current.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'center'
+      });
+      
+      // 強調表示のアニメーション効果
+      highlightedEvaluationRef.current.classList.add('highlight-animation');
+      
+      // アニメーション後にクラスを削除
+      setTimeout(() => {
+        if (highlightedEvaluationRef.current) {
+          highlightedEvaluationRef.current.classList.remove('highlight-animation');
+        }
+      }, 2000);
+    }
+  }, [highlightedEvaluationId]);
   
   // レビューの展開/折りたたみを切り替えるハンドラ
   const toggleReviewExpand = (index: number) => {
@@ -242,11 +270,19 @@ export function EvaluationList({ evaluations: initialEvaluations, isAdmin = fals
 
   return (
     <div className="space-y-6">
-      {evaluations.map((evaluation, index) => (
-        <div 
-          key={evaluation.id} 
-          className={`bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 ${evaluation.is_invisible ? 'opacity-70 border-2 border-red-300 dark:border-red-700' : ''}`}
-        >
+      {evaluations.map((evaluation, index) => {
+        // この評価が強調表示すべきかどうかを判定
+        const isHighlighted = highlightedEvaluationId === evaluation.id;
+        
+        return (
+          <div 
+            key={evaluation.id} 
+            ref={isHighlighted ? highlightedEvaluationRef : null}
+            className={`bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 
+              ${evaluation.is_invisible ? 'opacity-70 border-2 border-red-300 dark:border-red-700' : ''}
+              ${isHighlighted ? 'border-2 border-blue-500 dark:border-blue-400' : ''}
+              transition-all duration-300`}
+          >
           {evaluation.is_invisible && (
             <div className="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-300 px-3 py-1 rounded-md mb-3 text-sm font-medium flex items-center">
               <EyeOff size={16} className="mr-2" />
@@ -312,6 +348,25 @@ export function EvaluationList({ evaluations: initialEvaluations, isAdmin = fals
                     </button>
                   </>
                 )}
+                
+                {/* 共有ボタン */}
+                <button
+                  className="text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-300 hover:bg-gray-100 dark:hover:bg-gray-700 px-2 py-1 rounded-md flex items-center"
+                  onClick={() => {
+                    // 現在のURLを取得
+                    const url = new URL(window.location.href);
+                    // 評価IDをクエリパラメータとして設定
+                    url.searchParams.set('evaluation', evaluation.id.toString());
+                    // クリップボードにコピー
+                    navigator.clipboard.writeText(url.toString());
+                    // コピー成功を通知
+                    alert('レビューへのリンクをコピーしました');
+                  }}
+                  aria-label="共有"
+                  title="このレビューへのリンクをコピー"
+                >
+                  <Share size={16} />
+                </button>
               </div>
             </div>
           </div>
@@ -345,7 +400,7 @@ export function EvaluationList({ evaluations: initialEvaluations, isAdmin = fals
             <ReportList evaluationId={evaluation.id} />
           )}
         </div>
-      ))}
+      )})}
       
       {/* 通報フォームモーダル */}
       {reportModal.isOpen && reportModal.evaluationId && (

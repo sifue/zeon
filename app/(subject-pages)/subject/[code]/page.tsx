@@ -24,12 +24,17 @@ interface SubjectPageParams {
   params: Promise<{
     code: string;
   }>;
+  searchParams: Promise<{ evaluation?: string }>;
 }
 
-export default async function SubjectPage({ params }: SubjectPageParams) {
-  // Next.js 15.3.0では、paramsを使用する前にawaitする必要があります
+export default async function SubjectPage({ params, searchParams }: SubjectPageParams) {
+  // Next.js 15.3.0では、paramsとsearchParamsを使用する前にawaitする必要があります
   const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
   const { code } = resolvedParams;
+  
+  // クエリパラメータから評価IDを取得
+  const highlightedEvaluationId = resolvedSearchParams.evaluation ? parseInt(resolvedSearchParams.evaluation, 10) : undefined;
   const supabase = await createClient();
 
   const {
@@ -112,6 +117,7 @@ export default async function SubjectPage({ params }: SubjectPageParams) {
           <EvaluationList 
             evaluations={JSON.parse(JSON.stringify(evaluations))} 
             isAdmin={isAdmin}
+            highlightedEvaluationId={highlightedEvaluationId}
           />
         </div>
       </div>
