@@ -235,7 +235,7 @@ export function RecentEvaluations({ evaluations: initialEvaluations, isAdmin = f
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3">
             <div>
               <Link 
-                href={`/subject/${evaluation.code}`}
+                href={`/subject/${evaluation.code}?evaluation=${evaluation.id}`}
                 className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline font-medium"
               >
                 {evaluation.subject_name}

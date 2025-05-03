@@ -67,3 +67,14 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* 強調表示のアニメーション */
+@keyframes highlight-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5); }
+  70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+}
+
+.highlight-animation {
+  animation: highlight-pulse 2s ease-out;
+}

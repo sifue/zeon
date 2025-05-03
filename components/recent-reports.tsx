@@ -162,7 +162,7 @@ export function RecentReports({ reports: initialReports }: RecentReportsProps) {
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3">
               <div>
                 <Link 
-                  href={`/subject/${report.code}`}
+                  href={`/subject/${report.code}?evaluation=${report.evaluation_id}`}
                   className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline font-medium"
                 >
                   {report.subject_name}
