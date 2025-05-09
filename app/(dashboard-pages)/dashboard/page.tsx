@@ -2,6 +2,7 @@ import { getSubjects, getSubjectEvaluations, checkIsAdmin, getRecentEvaluations,
 import { SubjectList } from '@/components/subject-list';
 import { RecentEvaluations } from '@/components/recent-evaluations';
 import { RecentReports } from '@/components/recent-reports';
+import ServiceTerminationNotice from '@/components/service-termination-notice';
 import { createClient } from '@/utils/supabase/server';
 import { InfoIcon } from 'lucide-react';
 import { redirect } from 'next/navigation';
@@ -60,6 +61,8 @@ export default async function DashboardPage() {
     <div className="flex-1 w-full flex flex-col gap-4 pt-2 pb-4 px-2 sm:px-4 md:pt-3 md:pb-8 md:px-8">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold">ダッシュボード</h1>
+        
+        <ServiceTerminationNotice />
         
         {isAdmin && (
           <div className="bg-yellow-100 text-sm p-3 px-5 rounded-md text-yellow-800 flex gap-3 items-center">
